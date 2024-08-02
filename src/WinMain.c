@@ -31,8 +31,8 @@ static HRESULT TaskDialogCallbackProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
             PCWSTR PackageFullName;
             PCWSTR AppUserModelId;
         } *_ = (PVOID)lpRefData;
-        SendMessageW(hWnd, TDM_ENABLE_BUTTON, FALSE, !!_[0].PackageFullName);
-        SendMessageW(hWnd, TDM_ENABLE_BUTTON, TRUE, !!_[1].PackageFullName);
+        SendMessageW(hWnd, TDM_ENABLE_BUTTON, 0, !!_[0].PackageFullName);
+        SendMessageW(hWnd, TDM_ENABLE_BUTTON, 1, !!_[1].PackageFullName);
     }
     return S_OK;
 }
@@ -62,9 +62,9 @@ int WinMainCRTStartup()
                              .dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW |
                                         TDF_USE_COMMAND_LINKS,
                              .cButtons = 2,
-                             .pButtons = (TASKDIALOG_BUTTON[]){{.nButtonID = FALSE, .pszButtonText = L"Minecraft"},
+                             .pButtons = (TASKDIALOG_BUTTON[]){{.nButtonID = 0, .pszButtonText = L"Minecraft"},
                                                                {
-                                                                   .nButtonID = TRUE,
+                                                                   .nButtonID = 1,
                                                                    .pszButtonText = L"Minecraft Preview",
                                                                }},
                              .lpCallbackData = (LONG_PTR)_}),
@@ -119,7 +119,7 @@ int WinMainCRTStartup()
     pPackageDebugSettings->lpVtbl->TerminateAllProcesses(pPackageDebugSettings, _[nButton].PackageFullName);
     pApplicationActivationManager->lpVtbl->ActivateApplication(pApplicationActivationManager, _[nButton].AppUserModelId,
                                                                NULL, AO_NONE | AO_NOERRORUI, &dwProcessId);
-                                                               
+
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, nSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, NULL);
