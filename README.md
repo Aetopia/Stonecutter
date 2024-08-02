@@ -172,6 +172,9 @@ Stonecutter implements this fix as follows:
 
 - Select Minecraft or Minecraft Preview.
 
+  ![image](https://github.com/user-attachments/assets/eeb95e4b-9789-4eb0-af32-299b7a11b055)
+
+
 - Once selected, Stonecutter will launch and patch the game.
 
 ## Notes
