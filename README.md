@@ -170,9 +170,7 @@ Stonecutter implements this fix as follows:
 
         - Run Stonecutter from the Windows Start Menu.
 
-- Select Release (Minecraft) or Preview (Minecraft Preview):
-
-  ![image](https://github.com/user-attachments/assets/beea7f2f-762a-4d41-a20b-1a0ba5f27835)
+- Select Minecraft or Minecraft Preview.
 
 - Once selected, Stonecutter will launch and patch the game.
 
