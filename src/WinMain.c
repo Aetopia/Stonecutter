@@ -7,61 +7,91 @@
 #include <commctrl.h>
 #include <sddl.h>
 
+static PCWSTR GetPackageByPackageFamily(PCWSTR packageFamilyName)
+{
+    UINT count = 0, bufferLength = 0;
+    if (GetPackagesByPackageFamily(packageFamilyName, &count, NULL, &bufferLength, NULL) != ERROR_INSUFFICIENT_BUFFER)
+        return NULL;
+    PWSTR packageFullName = HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * bufferLength);
+    GetPackagesByPackageFamily(packageFamilyName, &count, HeapAlloc(GetProcessHeap(), 0, sizeof(PWSTR) * count),
+                               &bufferLength, packageFullName);
+    return packageFullName;
+}
+
+static HRESULT TaskDialogCallbackProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LONG_PTR lpRefData)
+{
+    if (uMsg == TDN_CREATED)
+    {
+        LPARAM lParam = (LPARAM)LoadImageW(GetModuleHandleW(NULL), NULL, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR);
+        SendMessageW(hWnd, WM_SETICON, ICON_SMALL, lParam);
+        SendMessageW(hWnd, WM_SETICON, ICON_BIG, lParam);
+
+        struct
+        {
+            PCWSTR PackageFullName;
+            PCWSTR AppUserModelId;
+        } *_ = (PVOID)lpRefData;
+        SendMessageW(hWnd, TDM_ENABLE_BUTTON, FALSE, !!_[0].PackageFullName);
+        SendMessageW(hWnd, TDM_ENABLE_BUTTON, TRUE, !!_[1].PackageFullName);
+    }
+    return S_OK;
+}
+
 int WinMainCRTStartup()
 {
-    if (CreateMutexW(NULL, TRUE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS)
-        ExitProcess(0);
+    const struct
+    {
+        PCWSTR PackageFullName;
+        PCWSTR AppUserModelId;
+    } _[] = {
+        {GetPackageByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"),
+         L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App"},
+        {GetPackageByPackageFamily(L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe"),
+         L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App"},
+    };
+
+    if ((CreateMutexW(NULL, TRUE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS))
+        goto _;
 
     int nButton = 0;
     TaskDialogIndirect(
         &((TASKDIALOGCONFIG){.cbSize = sizeof(TASKDIALOGCONFIG),
-                             .hMainIcon = LoadImageW(GetModuleHandleW(NULL), NULL, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR),
+                             .pfCallback = TaskDialogCallbackProc,
                              .pszWindowTitle = L"Stonecutter",
-                             .pszMainInstruction = L"Play",
-                             .pszContent = L"Select what to play.",
-                             .dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_USE_HICON_MAIN | TDF_SIZE_TO_CONTENT |
-                                        TDF_USE_COMMAND_LINKS | TDF_POSITION_RELATIVE_TO_WINDOW,
+                             .pszMainIcon = NULL,
+                             .dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW |
+                                        TDF_USE_COMMAND_LINKS,
                              .cButtons = 2,
-                             .pButtons = (TASKDIALOG_BUTTON[]){{.nButtonID = -1, .pszButtonText = L"Release"},
-                                                               {.nButtonID = -2, .pszButtonText = L"Preview"}}}),
+                             .pButtons = (TASKDIALOG_BUTTON[]){{.nButtonID = FALSE, .pszButtonText = L"Minecraft"},
+                                                               {
+                                                                   .nButtonID = TRUE,
+                                                                   .pszButtonText = L"Minecraft Preview",
+                                                               }},
+                             .lpCallbackData = (LONG_PTR)_}),
         &nButton, NULL, NULL);
     if (nButton == IDCANCEL)
-        ExitProcess(0);
+        goto _;
 
-    BOOL fFlag = nButton == -2;
+    DWORD nSize = MAX_PATH;
+    LPWSTR lpBuffer = HeapAlloc(GetProcessHeap(), 0, nSize * sizeof(WCHAR));
 
-    PCWSTR packageFamilyName =
-        fFlag ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe" : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe";
+    while (!QueryFullProcessImageNameW(GetCurrentProcess(), 0, lpBuffer, &nSize))
+        lpBuffer = HeapReAlloc(lpBuffer, 0, lpBuffer, (nSize += MAX_PATH) * sizeof(WCHAR));
 
-    PCWSTR appUserModelId =
-        fFlag ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App" : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App";
-
-    UINT count = 0, bufferLength = 0;
-    GetPackagesByPackageFamily(packageFamilyName, &count, NULL, &bufferLength, NULL);
-    PWSTR packageFullName = HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * bufferLength);
-    GetPackagesByPackageFamily(packageFamilyName, &count, HeapAlloc(GetProcessHeap(), 0, sizeof(PWSTR) * count),
-                               &bufferLength, packageFullName);
-
-    DWORD dwSize = MAX_PATH;
-    LPWSTR lpBuffer = HeapAlloc(GetProcessHeap(), 0, dwSize * sizeof(WCHAR));
-
-    while (!QueryFullProcessImageNameW(GetCurrentProcess(), 0, lpBuffer, &dwSize))
-        lpBuffer = HeapReAlloc(lpBuffer, 0, lpBuffer, (dwSize += MAX_PATH) * sizeof(WCHAR));
-
-    for (DWORD _ = lstrlenW(lpBuffer); _ < -1; _--)
-        if (lpBuffer[_] == '\\')
+    for (DWORD iBuffer = lstrlenW(lpBuffer); iBuffer < -1; iBuffer--)
+        if (lpBuffer[iBuffer] == '\\')
         {
-            lpBuffer[_ = _ + 1] = '\0';
-            lstrcatW(lpBuffer = HeapReAlloc(GetProcessHeap(), 0, lpBuffer, dwSize = sizeof(WCHAR) * (_ + 16)),
+            lpBuffer[iBuffer = iBuffer + 1] = '\0';
+            lstrcatW(lpBuffer = HeapReAlloc(GetProcessHeap(), 0, lpBuffer, nSize = sizeof(WCHAR) * (iBuffer + 16)),
                      L"Stonecutter.dll");
             break;
         }
 
-    PSID Sid = NULL;
-    ConvertStringSidToSidW(L"S-1-15-2-1", &Sid);
-
     PACL OldAcl = NULL;
     GetNamedSecurityInfoW(lpBuffer, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &OldAcl, NULL, NULL);
+
+    PSID Sid = NULL;
+    ConvertStringSidToSidW(L"S-1-15-2-1", &Sid);
 
     PACL NewAcl = NULL;
     SetEntriesInAclW(
@@ -76,24 +106,26 @@ int WinMainCRTStartup()
 
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
-    IPackageDebugSettings *pSettings = NULL;
+    IPackageDebugSettings *pPackageDebugSettings = NULL;
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
-                     (LPVOID *)&pSettings);
-    pSettings->lpVtbl->TerminateAllProcesses(pSettings, packageFullName);
-    pSettings->lpVtbl->EnableDebugging(pSettings, packageFullName, NULL, NULL);
+                     (LPVOID *)&pPackageDebugSettings);
 
-    IApplicationActivationManager *pManager = NULL;
+    IApplicationActivationManager *pApplicationActivationManager = NULL;
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
-                     &IID_IApplicationActivationManager, (LPVOID *)&pManager);
-    DWORD processId = 0;
-    pManager->lpVtbl->ActivateApplication(pManager, appUserModelId, NULL, AO_NONE | AO_NOERRORUI, &processId);
+                     &IID_IApplicationActivationManager, (LPVOID *)&pApplicationActivationManager);
 
-    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
-    LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, dwSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-    WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, dwSize, NULL);
+    DWORD dwProcessId = 0;
+    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton].PackageFullName, NULL, NULL);
+    pPackageDebugSettings->lpVtbl->TerminateAllProcesses(pPackageDebugSettings, _[nButton].PackageFullName);
+    pApplicationActivationManager->lpVtbl->ActivateApplication(pApplicationActivationManager, _[nButton].AppUserModelId,
+                                                               NULL, AO_NONE | AO_NOERRORUI, &dwProcessId);
+                                                               
+    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
+    LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, nSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, NULL);
     CloseHandle(CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL));
     CloseHandle(hProcess);
-
+_:
     ExitProcess(0);
     return 0;
 }

@@ -12,6 +12,6 @@ windres.exe -i "Resources\Resources.rc" -o "%TEMP%\Resources.o"
 
 gcc.exe -mwindows -nostdlib -s "WinMain.c" "%TEMP%\Resources.o" "%TEMP%\VersionInfo.o" -lOle32 -lComctl32 -lKernel32 -lUser32 -lAdvapi32 -o "bin\Stonecutter.exe"
 
-del "%TEMP%\Resources.o" "%TEMP%\VersionInfo.o"
-upx.exe --best --ultra-brute "bin\Stonecutter.dll" "bin\Stonecutter.exe">nul 2>&1
+del "%TEMP%\Resources.o" "%TEMP%\VersionInfo.o">nul 2>&1
+upx.exe --best --ultra-brute "bin\Stonecutter.dll" "bin\Stonecutter.exe"
 powershell.exe Compress-Archive -Path "bin\*" -DestinationPath "bin\Stonecutter.zip" -Force

@@ -1,6 +1,6 @@
 #include <windows.h>
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 1, 0, 0, 0
+FILEVERSION 1, 0, 1, 0
 BEGIN
 BLOCK "StringFileInfo"
 BEGIN
@@ -8,7 +8,7 @@ BLOCK "040904b0"
 BEGIN
 VALUE "FileDescription",  "Stonecutter"
 VALUE "ProductName",      "Stonecutter"
-VALUE "ProductVersion",	  "1.0.0.0"
+VALUE "ProductVersion",	  "1.0.1.0"
 VALUE "LegalCopyright",   "Copyright (C) 2024"
 END
 END
