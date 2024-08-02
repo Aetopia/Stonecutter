@@ -45,20 +45,23 @@ int WinMainCRTStartup()
     if ((CreateMutexW(NULL, TRUE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS))
         goto _;
 
-    int nButton = 0;
-    TaskDialogIndirect(
-        &((TASKDIALOGCONFIG){.cbSize = sizeof(TASKDIALOGCONFIG),
-                             .pfCallback = TaskDialogCallbackProc,
-                             .pszWindowTitle = L"Stonecutter",
-                             .pszMainIcon = NULL,
-                             .dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW |
-                                        TDF_USE_COMMAND_LINKS,
-                             .cButtons = 2,
-                             .pButtons = (TASKDIALOG_BUTTON[]){{.nButtonID = 0, .pszButtonText = L"Minecraft"},
-                                                               {.nButtonID = 1, .pszButtonText = L"Minecraft Preview"}}}),
-        &nButton, NULL, NULL);
-    if (nButton == IDCANCEL)
-        goto _;
+    int nButton = !!_[1].PackageFullName;
+    if (_[0].PackageFullName && _[1].PackageFullName)
+    {
+        TaskDialogIndirect(
+            &((TASKDIALOGCONFIG){
+                .cbSize = sizeof(TASKDIALOGCONFIG),
+                .pfCallback = TaskDialogCallbackProc,
+                .pszWindowTitle = L"Stonecutter",
+                .pszMainIcon = NULL,
+                .dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW | TDF_USE_COMMAND_LINKS,
+                .cButtons = 2,
+                .pButtons = (TASKDIALOG_BUTTON[]){{.nButtonID = 0, .pszButtonText = L"Minecraft"},
+                                                  {.nButtonID = 1, .pszButtonText = L"Minecraft Preview"}}}),
+            &nButton, NULL, NULL);
+        if (nButton == IDCANCEL)
+            goto _;
+    }
 
     DWORD nSize = MAX_PATH;
     LPWSTR lpBuffer = HeapAlloc(GetProcessHeap(), 0, nSize * sizeof(WCHAR));
