@@ -25,14 +25,6 @@ static HRESULT TaskDialogCallbackProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
         LPARAM lParam = (LPARAM)LoadImageW(GetModuleHandleW(NULL), NULL, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR);
         SendMessageW(hWnd, WM_SETICON, ICON_SMALL, lParam);
         SendMessageW(hWnd, WM_SETICON, ICON_BIG, lParam);
-
-        struct
-        {
-            PCWSTR PackageFullName;
-            PCWSTR AppUserModelId;
-        } *_ = (PVOID)lpRefData;
-        SendMessageW(hWnd, TDM_ENABLE_BUTTON, 0, !!_[0].PackageFullName);
-        SendMessageW(hWnd, TDM_ENABLE_BUTTON, 1, !!_[1].PackageFullName);
     }
     return S_OK;
 }
@@ -63,8 +55,7 @@ int WinMainCRTStartup()
                                         TDF_USE_COMMAND_LINKS,
                              .cButtons = 2,
                              .pButtons = (TASKDIALOG_BUTTON[]){{.nButtonID = 0, .pszButtonText = L"Minecraft"},
-                                                               {.nButtonID = 1, .pszButtonText = L"Minecraft Preview"}},
-                             .lpCallbackData = (LONG_PTR)_}),
+                                                               {.nButtonID = 1, .pszButtonText = L"Minecraft Preview"}}}),
         &nButton, NULL, NULL);
     if (nButton == IDCANCEL)
         goto _;
