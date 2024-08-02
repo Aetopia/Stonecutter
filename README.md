@@ -172,7 +172,7 @@ Stonecutter implements this fix as follows:
 
 - Select Minecraft or Minecraft Preview.
 
-    - Stonecutter will automatically launch Minecraft or Minecraft Preview if only one of them is installed.
+    - Minecraft or Minecraft Preview will be automatically launched if only one of them is installed.
 
   ![image](https://github.com/user-attachments/assets/eeb95e4b-9789-4eb0-af32-299b7a11b055)
 
