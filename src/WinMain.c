@@ -63,10 +63,7 @@ int WinMainCRTStartup()
                                         TDF_USE_COMMAND_LINKS,
                              .cButtons = 2,
                              .pButtons = (TASKDIALOG_BUTTON[]){{.nButtonID = 0, .pszButtonText = L"Minecraft"},
-                                                               {
-                                                                   .nButtonID = 1,
-                                                                   .pszButtonText = L"Minecraft Preview",
-                                                               }},
+                                                               {.nButtonID = 1, .pszButtonText = L"Minecraft Preview"}},
                              .lpCallbackData = (LONG_PTR)_}),
         &nButton, NULL, NULL);
     if (nButton == IDCANCEL)
