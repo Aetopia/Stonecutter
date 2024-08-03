@@ -181,7 +181,7 @@ Stonecutter implements this fix as follows:
 
 ## Notes
 
-- Stonecutter will relaunch the game if its already running.
+- Stonecutter will relaunch the game if required.
  
     - Stonecutter hooks `IDXGIFactory2::CreateSwapChainForCoreWindow` to intercept swapchain creation which only can be done at game startup.
 

@@ -6,6 +6,7 @@
 #include <aclapi.h>
 #include <commctrl.h>
 #include <sddl.h>
+#include <userenv.h>
 
 static PCWSTR GetPackageByPackageFamily(PCWSTR packageFamilyName)
 {
@@ -31,22 +32,14 @@ static HRESULT TaskDialogCallbackProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 int WinMainCRTStartup()
 {
-    const struct
-    {
-        PCWSTR PackageFullName;
-        PCWSTR AppUserModelId;
-    } _[] = {
-        {GetPackageByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"),
-         L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App"},
-        {GetPackageByPackageFamily(L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe"),
-         L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App"},
-    };
+    PCWSTR _[] = {GetPackageByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"),
+                  GetPackageByPackageFamily(L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe")};
 
     if ((CreateMutexW(NULL, TRUE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS))
         goto _;
 
-    int nButton = !!_[1].PackageFullName;
-    if (_[0].PackageFullName && _[1].PackageFullName)
+    int nButton = !!_[1];
+    if (_[0] && _[1])
     {
         TaskDialogIndirect(
             &((TASKDIALOGCONFIG){
@@ -100,16 +93,42 @@ int WinMainCRTStartup()
     IPackageDebugSettings *pPackageDebugSettings = NULL;
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (LPVOID *)&pPackageDebugSettings);
+    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
+
+    PSID psidAppContainerSid = NULL;
+    DeriveAppContainerSidFromAppContainerName(nButton ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe"
+                                                      : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe",
+                                              &psidAppContainerSid);
+
+    ULONG ReturnLength = 0;
+    GetAppContainerNamedObjectPath(NULL, psidAppContainerSid, 0, NULL, &ReturnLength);
+
+    LPWSTR ObjectPath = HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * (ReturnLength + 12));
+    GetAppContainerNamedObjectPath(NULL, psidAppContainerSid, ReturnLength, ObjectPath, &ReturnLength);
+
+    HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(ObjectPath, L"\\Stonecutter"));
+    if (hMutex && GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        ShellExecuteW(NULL, NULL,
+                      nButton ? L"shell:AppsFolder\\Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App"
+                              : L"shell:AppsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
+                      NULL, NULL, SW_HIDE);
+        goto _;
+    }
+    CloseHandle(hMutex);
+
+    pPackageDebugSettings->lpVtbl->TerminateAllProcesses(pPackageDebugSettings, _[nButton]);
 
     IApplicationActivationManager *pApplicationActivationManager = NULL;
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
                      &IID_IApplicationActivationManager, (LPVOID *)&pApplicationActivationManager);
+    CoAllowSetForegroundWindow((IUnknown *)pApplicationActivationManager, NULL);
 
     DWORD dwProcessId = 0;
-    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton].PackageFullName, NULL, NULL);
-    pPackageDebugSettings->lpVtbl->TerminateAllProcesses(pPackageDebugSettings, _[nButton].PackageFullName);
-    pApplicationActivationManager->lpVtbl->ActivateApplication(pApplicationActivationManager, _[nButton].AppUserModelId,
-                                                               NULL, AO_NONE | AO_NOERRORUI, &dwProcessId);
+    pApplicationActivationManager->lpVtbl->ActivateApplication(
+        pApplicationActivationManager,
+        nButton ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App" : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
+        NULL, AO_NONE | AO_NOERRORUI, &dwProcessId);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, nSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
