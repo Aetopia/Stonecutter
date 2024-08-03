@@ -86,6 +86,7 @@ int WinMainCRTStartup()
             .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
             .Trustee = {.TrusteeForm = TRUSTEE_IS_SID, .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP, .ptstrName = Sid}}),
         OldAcl, &NewAcl);
+
     SetNamedSecurityInfoW(lpBuffer, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, NewAcl, NULL);
 
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -93,6 +94,7 @@ int WinMainCRTStartup()
     IPackageDebugSettings *pPackageDebugSettings = NULL;
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (LPVOID *)&pPackageDebugSettings);
+
     pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
 
     PSID psidAppContainerSid = NULL;
@@ -132,6 +134,7 @@ int WinMainCRTStartup()
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, nSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    
     WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, NULL);
     CloseHandle(CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL));
     CloseHandle(hProcess);
