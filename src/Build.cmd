@@ -6,7 +6,7 @@ mkdir "bin">nul 2>&1
 
 windres.exe -i "Resources\VersionInfo.rc" -o "%TEMP%\VersionInfo.o"
 
-gcc.exe -s -static -shared "DllMain.c" "%TEMP%\VersionInfo.o" -ldxgi -ld3d11 -lMinHook -o "bin\Stonecutter.dll"
+gcc.exe -shared -nostdlib -static -s "DllMain.c" "%TEMP%\VersionInfo.o" "%SYSTEMROOT%\System32\Kernel32.dll" "%SYSTEMROOT%\System32\ntdll.dll" -lUser32 -ldxgi -ld3d11 -lMinHook -o "bin\Stonecutter.dll"
 
 windres.exe -i "Resources\Resources.rc" -o "%TEMP%\Resources.o"
 

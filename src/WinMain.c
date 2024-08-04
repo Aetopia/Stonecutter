@@ -8,18 +8,18 @@
 #include <sddl.h>
 #include <userenv.h>
 
-static PCWSTR GetPackageByPackageFamily(PCWSTR packageFamilyName)
+PCWSTR $(PCWSTR pszPackageFullName)
 {
-    UINT count = 0, bufferLength = 0;
-    if (GetPackagesByPackageFamily(packageFamilyName, &count, NULL, &bufferLength, NULL) != ERROR_INSUFFICIENT_BUFFER)
-        return NULL;
-    PWSTR packageFullName = HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * bufferLength);
-    GetPackagesByPackageFamily(packageFamilyName, &count, HeapAlloc(GetProcessHeap(), 0, sizeof(PWSTR) * count),
-                               &bufferLength, packageFullName);
-    return packageFullName;
+    UINT _ = 0;
+    PWSTR $ = GetPackagesByPackageFamily(pszPackageFullName, &((UINT32){}), NULL, &_, NULL) == ERROR_INSUFFICIENT_BUFFER
+                  ? HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * _)
+                  : NULL;
+    GetPackagesByPackageFamily(pszPackageFullName, &((UINT32){1}), HeapAlloc(GetProcessHeap(), 0, sizeof(PWSTR)), &_,
+                               $);
+    return $;
 }
 
-static HRESULT TaskDialogCallbackProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LONG_PTR lpRefData)
+HRESULT TaskDialogCallbackProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LONG_PTR lpRefData)
 {
     if (uMsg == TDN_CREATED)
     {
@@ -32,12 +32,10 @@ static HRESULT TaskDialogCallbackProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 int WinMainCRTStartup()
 {
-    PCWSTR _[] = {GetPackageByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"),
-                  GetPackageByPackageFamily(L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe")};
-
-    if ((CreateMutexW(NULL, TRUE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS))
+    if ((CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS))
         goto _;
 
+    PCWSTR _[] = {$(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"), $(L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe")};
     int nButton = !!_[1];
     if (_[0] && _[1])
     {
@@ -56,23 +54,19 @@ int WinMainCRTStartup()
             goto _;
     }
 
-    DWORD nSize = MAX_PATH;
-    LPWSTR lpBuffer = HeapAlloc(GetProcessHeap(), 0, nSize * sizeof(WCHAR));
+    WCHAR szLibFileName[MAX_PATH] = {};
+    QueryFullProcessImageNameW(GetCurrentProcess(), 0, szLibFileName, &((DWORD){MAX_PATH}));
 
-    while (!QueryFullProcessImageNameW(GetCurrentProcess(), 0, lpBuffer, &nSize))
-        lpBuffer = HeapReAlloc(lpBuffer, 0, lpBuffer, (nSize += MAX_PATH) * sizeof(WCHAR));
-
-    for (DWORD iBuffer = lstrlenW(lpBuffer); iBuffer < -1; iBuffer--)
-        if (lpBuffer[iBuffer] == '\\')
+    for (DWORD _ = lstrlenW(szLibFileName); _ < -1; _--)
+        if (szLibFileName[_] == '\\')
         {
-            lpBuffer[iBuffer = iBuffer + 1] = '\0';
-            lstrcatW(lpBuffer = HeapReAlloc(GetProcessHeap(), 0, lpBuffer, nSize = sizeof(WCHAR) * (iBuffer + 16)),
-                     L"Stonecutter.dll");
+            szLibFileName[_ = _ + 1] = '\0';
             break;
         }
 
     PACL OldAcl = NULL;
-    GetNamedSecurityInfoW(lpBuffer, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &OldAcl, NULL, NULL);
+    GetNamedSecurityInfoW(lstrcatW(szLibFileName, L"Stonecutter.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL,
+                          NULL, &OldAcl, NULL, NULL);
 
     PSID Sid = NULL;
     ConvertStringSidToSidW(L"S-1-15-2-1", &Sid);
@@ -87,7 +81,7 @@ int WinMainCRTStartup()
             .Trustee = {.TrusteeForm = TRUSTEE_IS_SID, .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP, .ptstrName = Sid}}),
         OldAcl, &NewAcl);
 
-    SetNamedSecurityInfoW(lpBuffer, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, NewAcl, NULL);
+    SetNamedSecurityInfoW(szLibFileName, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, NewAcl, NULL);
 
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
@@ -133,9 +127,9 @@ int WinMainCRTStartup()
         NULL, AO_NONE | AO_NOERRORUI, &dwProcessId);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
-    LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, nSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-    
-    WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, NULL);
+    LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, MAX_PATH, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+    WriteProcessMemory(hProcess, lpBaseAddress, szLibFileName, MAX_PATH, NULL);
     CloseHandle(CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL));
     CloseHandle(hProcess);
 _:
