@@ -93,7 +93,7 @@ int WinMainCRTStartup()
 
     PACKAGE_EXECUTION_STATE $ = PES_UNKNOWN;
     pPackageDebugSettings->lpVtbl->GetPackageExecutionState(pPackageDebugSettings, _[nButton], &$);
-    if ($ != PES_UNKNOWN ? $ != PES_TERMINATED : FALSE)
+    if ($ != PES_UNKNOWN)
         goto _;
 
     IApplicationActivationManager *pApplicationActivationManager = NULL;
