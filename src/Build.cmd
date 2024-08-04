@@ -10,7 +10,7 @@ gcc.exe -shared -nostdlib -static -s "DllMain.c" "%TEMP%\VersionInfo.o" "%SYSTEM
 
 windres.exe -i "Resources\Resources.rc" -o "%TEMP%\Resources.o"
 
-gcc.exe -mwindows -nostdlib -s "WinMain.c" "%TEMP%\Resources.o" "%TEMP%\VersionInfo.o" -lShell32 -lUserenv -lOle32 -lComctl32 -lKernel32 -lUser32 -lAdvapi32 -o "bin\Stonecutter.exe"
+gcc.exe -mwindows -nostdlib -s "WinMain.c" "%TEMP%\Resources.o" "%TEMP%\VersionInfo.o" -lUserenv -lOle32 -lComctl32 -lKernel32 -lUser32 -lAdvapi32 -o "bin\Stonecutter.exe"
 
 del "%TEMP%\Resources.o" "%TEMP%\VersionInfo.o">nul 2>&1
 upx.exe --best --ultra-brute "bin\Stonecutter.dll" "bin\Stonecutter.exe"
