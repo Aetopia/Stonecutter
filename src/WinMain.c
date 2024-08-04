@@ -6,7 +6,6 @@
 #include <aclapi.h>
 #include <commctrl.h>
 #include <sddl.h>
-#include <userenv.h>
 
 PCWSTR $(PCWSTR pszPackageFullName)
 {
@@ -37,7 +36,7 @@ int WinMainCRTStartup()
 
     PCWSTR _[] = {$(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"), $(L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe")};
     int nButton = !!_[1];
-    
+
     if (_[0] && _[1])
     {
         TaskDialogIndirect(
@@ -92,21 +91,10 @@ int WinMainCRTStartup()
 
     pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
 
-    PSID psidAppContainerSid = NULL;
-    DeriveAppContainerSidFromAppContainerName(nButton ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe"
-                                                      : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-                                              &psidAppContainerSid);
-
-    ULONG ReturnLength = 0;
-    GetAppContainerNamedObjectPath(NULL, psidAppContainerSid, 0, NULL, &ReturnLength);
-
-    LPWSTR ObjectPath = HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * (ReturnLength + 12));
-    GetAppContainerNamedObjectPath(NULL, psidAppContainerSid, ReturnLength, ObjectPath, &ReturnLength);
-
-    HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(ObjectPath, L"\\Stonecutter"));
-    if (hMutex && GetLastError() != ERROR_ALREADY_EXISTS)
-        pPackageDebugSettings->lpVtbl->TerminateAllProcesses(pPackageDebugSettings, _[nButton]);
-    CloseHandle(hMutex);
+    PACKAGE_EXECUTION_STATE $ = PES_UNKNOWN;
+    pPackageDebugSettings->lpVtbl->GetPackageExecutionState(pPackageDebugSettings, _[nButton], &$);
+    if ($ != PES_UNKNOWN ? $ != PES_TERMINATED : FALSE)
+        goto _;
 
     IApplicationActivationManager *pApplicationActivationManager = NULL;
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,

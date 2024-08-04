@@ -170,6 +170,8 @@ Stonecutter implements this fix as follows:
 
         - Run Stonecutter from the Windows Start Menu.
 
+- Ensure Minecraft or Minecraft Preview isn't running.
+
 - Select Minecraft or Minecraft Preview.
 
     - Minecraft or Minecraft Preview will be automatically launched if only one of them is installed.
@@ -180,10 +182,6 @@ Stonecutter implements this fix as follows:
 - Once selected, Stonecutter will launch and patch the game.
 
 ## Notes
-
-- Stonecutter will relaunch the game if required.
- 
-    - Stonecutter hooks `IDXGIFactory2::CreateSwapChainForCoreWindow` to intercept swapchain creation which only can be done at game startup.
 
 - Use [`Bedrock.Desktop`](https://github.com/Aetopia/Bedrock.Desktop) for fixing MCPE-109879 only.
 
