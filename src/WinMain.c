@@ -89,12 +89,12 @@ int WinMainCRTStartup()
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (LPVOID *)&pPackageDebugSettings);
 
-    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
-
     PACKAGE_EXECUTION_STATE $ = PES_UNKNOWN;
     pPackageDebugSettings->lpVtbl->GetPackageExecutionState(pPackageDebugSettings, _[nButton], &$);
     if ($ != PES_UNKNOWN)
         goto _;
+    
+    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
 
     IApplicationActivationManager *pApplicationActivationManager = NULL;
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
