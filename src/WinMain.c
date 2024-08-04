@@ -37,6 +37,7 @@ int WinMainCRTStartup()
 
     PCWSTR _[] = {$(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"), $(L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe")};
     int nButton = !!_[1];
+    
     if (_[0] && _[1])
     {
         TaskDialogIndirect(
