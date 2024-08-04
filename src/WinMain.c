@@ -103,17 +103,9 @@ int WinMainCRTStartup()
     GetAppContainerNamedObjectPath(NULL, psidAppContainerSid, ReturnLength, ObjectPath, &ReturnLength);
 
     HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(ObjectPath, L"\\Stonecutter"));
-    if (hMutex && GetLastError() == ERROR_ALREADY_EXISTS)
-    {
-        ShellExecuteW(NULL, NULL,
-                      nButton ? L"shell:AppsFolder\\Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App"
-                              : L"shell:AppsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
-                      NULL, NULL, SW_HIDE);
-        goto _;
-    }
+    if (hMutex && GetLastError() != ERROR_ALREADY_EXISTS)
+        pPackageDebugSettings->lpVtbl->TerminateAllProcesses(pPackageDebugSettings, _[nButton]);
     CloseHandle(hMutex);
-
-    pPackageDebugSettings->lpVtbl->TerminateAllProcesses(pPackageDebugSettings, _[nButton]);
 
     IApplicationActivationManager *pApplicationActivationManager = NULL;
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
