@@ -161,7 +161,9 @@ Stonecutter implements this fix as follows:
 Forces Minecraft: Bedrock Edition to use DirectX 11 instead of auto-selecting the graphics API.
 
 ### Usage
-Consider benchmarking DirectX 11 & DirectX 12 to see what provides better performance.
+- Consider benchmarking DirectX 11 & DirectX 12 to see what provides better performance.
+
+- Some features might require DirectX 12.
 
 To enable this feature for Minecraft/Minecraft Preview, add the following to Stonecutter's configuration file:<br>
 
