@@ -153,6 +153,24 @@ Stonecutter implements this fix as follows:
 - Enable debug mode for the package by calling `IPackageDebugSettings::EnableDebugging`.
 </details>
 
+## Features
+
+<details><summary>RenderDragon DirectX 11</summary>
+
+### Description
+Forces Minecraft: Bedrock Edition to use DirectX 11 instead of auto-selecting the graphics API.
+
+### Usage
+Consider benchmarking DirectX 11 & DirectX 12 to see what provides better performance.
+
+To enable this feature for Minecraft/Minecraft Preview, add the following to Stonecutter's configuration file:<br>
+
+```ini
+D3D11 = 1
+```
+
+</details>
+
 ## Usage
 
 - Download the latest release from:
@@ -172,14 +190,32 @@ Stonecutter implements this fix as follows:
 
 - Ensure Minecraft or Minecraft Preview isn't running.
 
-- Select Minecraft or Minecraft Preview.
+- Select Minecraft/Minecraft Preview.
 
-    - Minecraft or Minecraft Preview will be automatically launched if only one of them is installed.
+    - Minecraft/Minecraft Preview will be automatically launched if only one of them is installed.
 
   ![image](https://github.com/user-attachments/assets/eeb95e4b-9789-4eb0-af32-299b7a11b055)
 
 
 - Once selected, Stonecutter will launch and patch the game.
+
+## Configuration
+Stonecutter may be configured separately for Minecraft/Minecraft Preview.
+
+- Create a file called `Stonecutter.ini` in the following paths:
+    |Game|Path|
+    |-|-|
+    |Minecraft|`%LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState`|
+    |Minecraft Preview|`%LOCALAPPDATA%\Packages\Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe\RoamingState`|
+
+- Add the following contents file:
+
+    ```ini
+    [Settings]
+    D3D11 = 0
+    ```
+
+- Save the file.
 
 ## Notes
 

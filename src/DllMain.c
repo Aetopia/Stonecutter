@@ -19,11 +19,11 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
                                      DXGI_SWAP_CHAIN_DESC1 *pDesc, IDXGIOutput *pRestrictToOutput,
                                      IDXGISwapChain1 **ppSwapChain)
 {
-    LPUNKNOWN $ = NULL;
-    if (_ && !pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)&$))
+    ID3D12CommandQueue *pCommandQueue = NULL;
+    if (_ && !pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)&pCommandQueue))
     {
-        $->lpVtbl->Release($);
-        return E_FAIL;
+        pCommandQueue->lpVtbl->Release(pCommandQueue);
+        return DXGI_ERROR_INVALID_CALL;
     }
     pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     return IDXGIFactory2_CreateSwapChainForCoreWindow(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
