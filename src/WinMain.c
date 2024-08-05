@@ -89,17 +89,17 @@ int WinMainCRTStartup()
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (LPVOID *)&pPackageDebugSettings);
 
-    PACKAGE_EXECUTION_STATE $ = PES_UNKNOWN;
-    pPackageDebugSettings->lpVtbl->GetPackageExecutionState(pPackageDebugSettings, _[nButton], &$);
-    if ($ != PES_UNKNOWN)
-        goto _;
-    
-    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
-
     IApplicationActivationManager *pApplicationActivationManager = NULL;
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
                      &IID_IApplicationActivationManager, (LPVOID *)&pApplicationActivationManager);
     CoAllowSetForegroundWindow((IUnknown *)pApplicationActivationManager, NULL);
+
+    PACKAGE_EXECUTION_STATE $ = PES_UNKNOWN;
+    pPackageDebugSettings->lpVtbl->GetPackageExecutionState(pPackageDebugSettings, _[nButton], &$);
+    if ($ != PES_UNKNOWN)
+        goto _;
+
+    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
 
     DWORD dwProcessId = 0;
     pApplicationActivationManager->lpVtbl->ActivateApplication(

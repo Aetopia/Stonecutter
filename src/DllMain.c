@@ -1,7 +1,10 @@
 #include <initguid.h>
 #include <windows.h>
 #include <d3d11_1.h>
+#include <d3d12.h>
 #include <MinHook.h>
+
+BOOL _ = FALSE;
 
 HRESULT(*IDXGISwapChain_ResizeBuffers)
 (IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags) = NULL;
@@ -16,6 +19,12 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
                                      DXGI_SWAP_CHAIN_DESC1 *pDesc, IDXGIOutput *pRestrictToOutput,
                                      IDXGISwapChain1 **ppSwapChain)
 {
+    LPUNKNOWN $ = NULL;
+    if (_ && !pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)&$))
+    {
+        $->lpVtbl->Release($);
+        return E_FAIL;
+    }
     pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     return IDXGIFactory2_CreateSwapChainForCoreWindow(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 }
@@ -34,12 +43,8 @@ HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT H
 
 DWORD ThreadProc(LPVOID lpParameter)
 {
-    MH_Initialize();
-
     IDXGIFactory2 *pFactory = NULL;
     CreateDXGIFactory(&IID_IDXGIFactory2, (void **)&pFactory);
-    MH_CreateHook((*(LPVOID **)pFactory)[16], &CreateSwapChainForCoreWindow,
-                  (LPVOID *)&IDXGIFactory2_CreateSwapChainForCoreWindow);
 
     IDXGISwapChain *pSwapChain = NULL;
     D3D11CreateDeviceAndSwapChain(
@@ -55,16 +60,26 @@ DWORD ThreadProc(LPVOID lpParameter)
                 WS_OVERLAPPED, 0, 0, 0, 0, NULL, NULL, NULL, NULL)}),
         &pSwapChain, NULL, NULL, NULL);
 
+    MH_Initialize();
+    MH_CreateHook((*(LPVOID **)pFactory)[16], &CreateSwapChainForCoreWindow,
+                  (LPVOID *)&IDXGIFactory2_CreateSwapChainForCoreWindow);
     MH_CreateHook((*(LPVOID **)pSwapChain)[8], &Present, (LPVOID *)&IDXGISwapChain_Present);
     MH_CreateHook((*(LPVOID **)pSwapChain)[13], &ResizeBuffers, (LPVOID *)&IDXGISwapChain_ResizeBuffers);
+    MH_EnableHook(MH_ALL_HOOKS);
 
-    return MH_EnableHook(MH_ALL_HOOKS);
+    pFactory->lpVtbl->Release(pFactory);
+    pSwapChain->lpVtbl->Release(pSwapChain);
+    return 0;
 }
 
 BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
+        WCHAR szFileName[MAX_PATH] = {};
+        ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
+        _ = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, szFileName) == TRUE;
+
         DisableThreadLibraryCalls(hinstDLL);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));
     }
