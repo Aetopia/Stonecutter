@@ -208,7 +208,7 @@ Stonecutter may be configured separately for Minecraft/Minecraft Preview.
     |Minecraft|`%LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState`|
     |Minecraft Preview|`%LOCALAPPDATA%\Packages\Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe\RoamingState`|
 
-- Add the following contents file:
+- Add the following contents:
 
     ```ini
     [Settings]
