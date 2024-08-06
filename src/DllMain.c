@@ -76,8 +76,9 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
-        if (CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS)
-            return FALSE;
+        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
+        if (GetLastError() == ERROR_ALREADY_EXISTS)
+            return !CloseHandle(hMutex);
 
         WCHAR szFileName[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);

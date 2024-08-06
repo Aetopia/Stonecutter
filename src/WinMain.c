@@ -105,7 +105,11 @@ int WinMainCRTStartup()
     LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, MAX_PATH, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
     WriteProcessMemory(hProcess, lpBaseAddress, szLibFileName, MAX_PATH, NULL);
-    CloseHandle(CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL));
+    HANDLE hThread =
+        CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL);
+    WaitForSingleObject(hThread, INFINITE);
+    VirtualFreeEx(hProcess, lpBaseAddress, 0, MEM_RELEASE);
+    CloseHandle(hThread);
     CloseHandle(hProcess);
 _:
     ExitProcess(0);
