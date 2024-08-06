@@ -161,7 +161,7 @@ Stonecutter implements this fix as follows:
 Forces Minecraft: Bedrock Edition to use DirectX 11 instead of auto-selecting the graphics API.
 
 ### Implementation
-When hooking `IDXGIFactory2::CreateSwapChainForCoreWindow`, we can fool Minecraft: Bedrock Edition into thinking DirectX 12 failed to create a swapchain by using the following code:
+To implement this feature, the following code runs under `IDXGIFactory2::CreateSwapChainForCoreWindow`:
 
 ```c
 ID3D12CommandQueue *pCommandQueue = NULL;
