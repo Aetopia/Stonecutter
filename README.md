@@ -203,10 +203,29 @@ D3D11 = 1
 Stonecutter may be configured separately for Minecraft/Minecraft Preview.
 
 - Create a file called `Stonecutter.ini` in the following paths:
-    |Game|Path|
-    |-|-|
-    |Minecraft|`%LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState`|
-    |Minecraft Preview|`%LOCALAPPDATA%\Packages\Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe\RoamingState`|
+    <table>
+    <tr><th>Game</th><th>Path</th></tr>
+
+    <tr>
+    <td>Minecraft</td>
+    <td>
+
+    ```
+    %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState
+    ```
+    </td>
+    </tr>
+
+    <tr>
+    <td>Minecraft Preview</td> 
+    <td>
+    
+    ```
+    %LOCALAPPDATA%\Packages\Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe\RoamingState`
+    ```
+    </td>
+    </tr>
+    </table>
 
 - Add the following contents:
 
