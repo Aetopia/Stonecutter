@@ -174,11 +174,7 @@ if (!pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)
 
 - Check if DirectX 12 is being used by querying for `ID3D12CommandQueue`.
 
-- If DirectX 12 is being used then return `DXGI_ERROR_INVALID_CALL`.
-
-    - From the [documentation](https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/dxgi-error):
-
-	    "The application provided invalid parameter data; this must be debugged and fixed before the application is released."
+- If DirectX 12 is being used then return [`DXGI_ERROR_INVALID_CALL`](https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/dxgi-error).
 
 - This causes Minecraft: Bedrock Edition to fallback to DirectX 11.
 
