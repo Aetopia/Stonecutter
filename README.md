@@ -155,8 +155,7 @@ Stonecutter implements this fix as follows:
 
 ## Features
 
-<details><summary>RenderDragon DirectX 11</summary>
-
+<details><summary>RenderDragon DirectX 11</summary><br>
 Forces Minecraft: Bedrock Edition to use DirectX 11 instead of auto-selecting the graphics API.
 
 ### Implementation
