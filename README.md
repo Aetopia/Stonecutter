@@ -157,8 +157,29 @@ Stonecutter implements this fix as follows:
 
 <details><summary>RenderDragon DirectX 11</summary>
 
-### Description
 Forces Minecraft: Bedrock Edition to use DirectX 11 instead of auto-selecting the graphics API.
+
+### Implementation
+When hooking `IDXGIFactory2::CreateSwapChainForCoreWindow`, we can fool Minecraft: Bedrock Edition into thinking DirectX 12 failed to create a swapchain by using the following code:
+
+```c
+ID3D12CommandQueue *pCommandQueue = NULL;
+if (!pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)&pCommandQueue))
+{
+    pCommandQueue->lpVtbl->Release(pCommandQueue);
+    return DXGI_ERROR_INVALID_CALL;
+}
+```
+
+- Check if DirectX 12 is being used by querying its interface.
+
+- If DirectX is being used then return `DXGI_ERROR_INVALID_CALL`.
+
+    - From the [documentation](https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/dxgi-error):
+
+	    "The application provided invalid parameter data; this must be debugged and fixed before the application is released."
+
+- This causes Minecraft: Bedrock Edition to fallback to DirectX 11.
 
 ### Usage
 - Consider benchmarking DirectX 11 & DirectX 12 to see what provides better performance.
