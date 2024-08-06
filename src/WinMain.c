@@ -102,9 +102,10 @@ int WinMainCRTStartup()
         NULL, AO_NONE | AO_NOERRORUI, &dwProcessId);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
-    LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, MAX_PATH, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    LPVOID lpBaseAddress =
+        VirtualAllocEx(hProcess, NULL, sizeof(WCHAR) * MAX_PATH, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
-    WriteProcessMemory(hProcess, lpBaseAddress, szLibFileName, MAX_PATH, NULL);
+    WriteProcessMemory(hProcess, lpBaseAddress, szLibFileName, sizeof(WCHAR) * MAX_PATH, NULL);
     HANDLE hThread =
         CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL);
     WaitForSingleObject(hThread, INFINITE);
