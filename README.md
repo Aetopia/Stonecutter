@@ -213,6 +213,7 @@ Stonecutter may be configured separately for Minecraft/Minecraft Preview.
     ```
     %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState
     ```
+    
     </td>
     </tr>
 
@@ -223,6 +224,7 @@ Stonecutter may be configured separately for Minecraft/Minecraft Preview.
     ```
     %LOCALAPPDATA%\Packages\Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe\RoamingState`
     ```
+
     </td>
     </tr>
     </table>
