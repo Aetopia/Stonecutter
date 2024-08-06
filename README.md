@@ -190,8 +190,6 @@ D3D11 = 1
 
         - Run Stonecutter from the Windows Start Menu.
 
-- Ensure Minecraft or Minecraft Preview isn't running.
-
 - Select Minecraft/Minecraft Preview.
 
     - Minecraft/Minecraft Preview will be automatically launched if only one of them is installed.
