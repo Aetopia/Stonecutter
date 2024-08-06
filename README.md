@@ -153,14 +153,13 @@ Stonecutter implements this fix as follows:
 - Enable debug mode for the package by calling `IPackageDebugSettings::EnableDebugging`.
 </details>
 
-## Features
+## Feature
 
-<details><summary>RenderDragon DirectX 11</summary>
+### RenderDragon DirectX 11
 
-### Description
 Forces Minecraft: Bedrock Edition to use DirectX 11 instead of auto-selecting the graphics API.
 
-### Usage
+#### Usage
 - Consider benchmarking DirectX 11 & DirectX 12 to see what provides better performance.
 
 - Some features might require DirectX 12.

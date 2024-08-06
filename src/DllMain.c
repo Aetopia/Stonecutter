@@ -4,7 +4,7 @@
 #include <d3d12.h>
 #include <MinHook.h>
 
-BOOL _ = FALSE;
+BOOL _ = FALSE, $ = FALSE;
 
 HRESULT(*IDXGISwapChain_ResizeBuffers)
 (IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags) = NULL;
@@ -25,13 +25,13 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
         pCommandQueue->lpVtbl->Release(pCommandQueue);
         return DXGI_ERROR_INVALID_CALL;
     }
-    pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    $ = pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     return IDXGIFactory2_CreateSwapChainForCoreWindow(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 }
 
 HRESULT Present(IDXGISwapChain *This, UINT SyncInterval, UINT Flags)
 {
-    return IDXGISwapChain_Present(This, 0, DXGI_PRESENT_ALLOW_TEARING);
+    return $ ? IDXGISwapChain_Present(This, 0, DXGI_PRESENT_ALLOW_TEARING) : DXGI_ERROR_DEVICE_RESET;
 }
 
 HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
@@ -76,6 +76,9 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
+        if (CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS)
+            return FALSE;
+
         WCHAR szFileName[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
         _ = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, szFileName) == TRUE;

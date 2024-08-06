@@ -94,14 +94,8 @@ int WinMainCRTStartup()
                      &IID_IApplicationActivationManager, (LPVOID *)&pApplicationActivationManager);
     CoAllowSetForegroundWindow((IUnknown *)pApplicationActivationManager, NULL);
 
-    PACKAGE_EXECUTION_STATE $ = PES_UNKNOWN;
-    pPackageDebugSettings->lpVtbl->GetPackageExecutionState(pPackageDebugSettings, _[nButton], &$);
-    if ($ != PES_UNKNOWN)
-        goto _;
-
-    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
-
     DWORD dwProcessId = 0;
+    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
     pApplicationActivationManager->lpVtbl->ActivateApplication(
         pApplicationActivationManager,
         nButton ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App" : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
