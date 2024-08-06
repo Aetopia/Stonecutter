@@ -172,9 +172,9 @@ if (!pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)
 }
 ```
 
-- Check if DirectX 12 is being used by querying its interface.
+- Check if DirectX 12 is being used by querying for `ID3D12CommandQueue`.
 
-- If DirectX is being used then return `DXGI_ERROR_INVALID_CALL`.
+- If DirectX 12 is being used then return `DXGI_ERROR_INVALID_CALL`.
 
     - From the [documentation](https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/dxgi-error):
 
