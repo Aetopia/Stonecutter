@@ -99,7 +99,7 @@ int WinMainCRTStartup()
     pApplicationActivationManager->lpVtbl->ActivateApplication(
         pApplicationActivationManager,
         nButton ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App" : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
-        NULL, AO_NONE | AO_NOERRORUI, &dwProcessId);
+        NULL, AO_NOERRORUI, &dwProcessId);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress =
