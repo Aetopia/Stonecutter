@@ -56,7 +56,7 @@ Minecraft.Windows.exe[6236]:
     0000022714F40AE0 (DXGI): SyncInterval=0 Flags=0 CPU=6.622ms (151.1 fps) Display=13.333ms (75.1 fps) GPU=6.698ms Latency=25.287ms Hardware: Independent Flip
 ```
 
-The game is now capped 2× the monitor refresh rate when V-Sync is disabled, this is due the following reasons:
+The game is now capped 2× the monitor refresh rate when V-Sync is disabled, this is due to the following reasons:
 
 - Minecraft uses 3 swapchain buffers, 1 front, 2 back.
 
