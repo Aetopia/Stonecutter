@@ -73,7 +73,7 @@ Minecraft.Windows.exe[3536]:
 
 Now the game is capped at 3× the monitor's refresh rate.
 
-So what's exactly going on here when `IDXGISwapchain::Present(0, 0)` is called?
+So what's exactly going on when `IDXGISwapchain::Present(0, 0)` is called?
 
 - Desktop Window Manager is forcing the game to synchronize with the monitor's refresh rate or use V-Sync.
 
