@@ -248,7 +248,7 @@ Stonecutter may be configured separately for Minecraft/Minecraft Preview.
 
     - To take advantage of "Improved Input Response", set `gfx_vsync` to `1` in `options.txt`.
 
-    - For a smooth & consistent experience considering capping your framerate, you may use:
+    - For a smooth & consistent experience, consider capping your framerate, you may use:
 
         - Driver Framerate Limiter
 
