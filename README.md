@@ -73,14 +73,14 @@ Minecraft.Windows.exe[3536]:
 
 Now the game is capped at 3× the monitor's refresh rate.
 
-So what's exactly going on here?
+So what's exactly going on here when `IDXGISwapchain::Present(0, 0)` is called?
 
-- Desktop Window Manager has an application implicitly synchronize with the monitor's refresh rate when `IDXGISwapchain::Present(0, 0)` is called.
+- Desktop Window Manager is forcing the game to synchronize with the monitor's refresh rate or use V-Sync.
 
-- Additionally the maximum framerate is determined by what amount of buffers being used.
+- The maximum framerate is determined by the buffer count.
 
 ### Fix
-Knowing that the issue is being induced implicitly enabled V-Sync, shouldn't there be a way to disable it?
+Knowing that the issue is being induced by implicitly forced V-Sync, shouldn't there be a way to disable it?
 
 By using `DXGI_PRESENT_ALLOW_TEARING` & `DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING`, an application can notify Desktop Window Manager that it allows screen tearing & shouldn't synchronize with the monitor's refresh rate.
 
