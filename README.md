@@ -9,7 +9,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 
 ### Cause
 The cause for this bug seems to be related to how the game handles input updates.<br>
-According to the bug report, the game captures input updates every 4 frames.
+According to the bug report, the game captures input updates at a fixed frame interval.
 
 The fix, Mojang implemented is through a new option called "Improved Input Response" which seems capture input updates at a reduced frame interval. 
  
