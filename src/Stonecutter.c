@@ -6,13 +6,13 @@
 #include <commctrl.h>
 #include <sddl.h>
 
-PCWSTR $(PCWSTR pszPackageFullName)
+PCWSTR $(PCWSTR pszPackageFamilyName)
 {
     UINT _ = 0;
-    PWSTR $ = GetPackagesByPackageFamily(pszPackageFullName, &((UINT32){}), NULL, &_, NULL) == ERROR_INSUFFICIENT_BUFFER
+    PWSTR $ = GetPackagesByPackageFamily(pszPackageFamilyName, &((UINT32){}), NULL, &_, NULL) == ERROR_INSUFFICIENT_BUFFER
                   ? HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * _)
                   : NULL;
-    GetPackagesByPackageFamily(pszPackageFullName, &((UINT32){1}), HeapAlloc(GetProcessHeap(), 0, sizeof(PWSTR)), &_,
+    GetPackagesByPackageFamily(pszPackageFamilyName, &((UINT32){1}), HeapAlloc(GetProcessHeap(), 0, sizeof(PWSTR)), &_,
                                $);
     return $;
 }
