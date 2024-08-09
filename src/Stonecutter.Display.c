@@ -121,11 +121,14 @@ HRESULT LauncherVisibilityChange(IAppVisibilityEvents *This, WINBOOL currentVisi
 
 int WinMainCRTStartup()
 {
-    PWSTR *szArgs = CommandLineToArgvW(GetCommandLineW(), &((INT){}));
+    INT nArgs = 0;
+    PWSTR *szArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+    if (nArgs == 1)
+        goto _;
+
     PCWSTR lpName = *(szArgs[1]) == L'1'   ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App"
                     : *(szArgs[1]) == L'0' ? L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App"
                                            : NULL;
-
     CreateMutexW(NULL, FALSE, lpName);
     if (!lpName || GetLastError() == ERROR_ALREADY_EXISTS)
         goto _;
