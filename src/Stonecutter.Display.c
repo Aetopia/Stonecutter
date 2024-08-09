@@ -77,9 +77,9 @@ VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idOb
                 FreeLibrary(hModule);
             }
 
-            DWORD $ = 0;
-            _(hWnd, &$);
-            if ($ != 1)
+            DWORD dwBand = 0;
+            _(hWnd, &dwBand);
+            if (dwBand != 1)
                 $(TRUE);
             break;
         }
