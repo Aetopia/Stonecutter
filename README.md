@@ -209,7 +209,7 @@ Frequency = 0
 |Key|Description|
 |-|-|
 |Fullscreen|Toggles enhanced immersive fullscreen.|
-|Width|Configures the resolution's width.|
+|Width|Configures the resolution width.|
 |Height| Configures the resolution height|
 |Frequency|Configures the refresh rate.|
 </details>
