@@ -186,7 +186,32 @@ To enable this feature for Minecraft/Minecraft Preview, add the following to Sto
 ```ini
 D3D11 = 1
 ```
+</details>
 
+<details><summary>Enhanced Immersive Fullscreen</summary><br>
+This feature allows Minecraft: Bedrock Edition to run at any display mode when in fullscreen.
+
+- Only landscape display modes are supported.
+
+- Only the primary monitor's display mode will changed.
+
+- By default, the default display mode stored in the Windows Registry is used.
+
+To enable this feature for Minecraft/Minecraft Preview, add the following to Stonecutter's configuration file:<br>
+
+```
+Fullscreen = 1
+Width = 0
+Height = 0
+Frequency = 0
+```
+
+|Key|Description|
+|-|-|
+|Fullscreen|Enables enhanced immersive fullscreen.|
+|Width|Configures the resolution's width.|
+|Height| Configures the resolution height|
+|Frequency|Configures the refresh rate.|
 </details>
 
 ## Usage
@@ -236,6 +261,10 @@ Stonecutter may be configured separately for Minecraft/Minecraft Preview.
     ```ini
     [Settings]
     D3D11 = 0
+    Fullscreen = 0
+    Width = 0
+    Height = 0
+    Frequency = 0
     ```
 
 - Save the file.

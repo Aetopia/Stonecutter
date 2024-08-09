@@ -61,12 +61,13 @@ int WinMainCRTStartup()
         if (szLibFileName[_] == '\\')
         {
             szLibFileName[_ = _ + 1] = '\0';
+            SetCurrentDirectoryW(szLibFileName);
             break;
         }
 
     PACL OldAcl = NULL;
-    GetNamedSecurityInfoW(lstrcatW(szLibFileName, L"Stonecutter.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL,
-                          NULL, &OldAcl, NULL, NULL);
+    GetNamedSecurityInfoW(lstrcatW(szLibFileName, L"Stonecutter.DirectX.dll"), SE_FILE_OBJECT,
+                          DACL_SECURITY_INFORMATION, NULL, NULL, &OldAcl, NULL, NULL);
 
     PSID Sid = NULL;
     ConvertStringSidToSidW(L"S-1-15-2-1", &Sid);
@@ -112,6 +113,12 @@ int WinMainCRTStartup()
     VirtualFreeEx(hProcess, lpBaseAddress, 0, MEM_RELEASE);
     CloseHandle(hThread);
     CloseHandle(hProcess);
+
+    PROCESS_INFORMATION $ = {};
+    CreateProcessW(NULL, nButton ? L"Stonecutter.Display.exe 1" : L"Stonecutter.Display.exe 0", NULL, NULL, FALSE, 0,
+                   NULL, NULL, &((STARTUPINFOW){}), &$);
+    CloseHandle($.hProcess);
+    CloseHandle($.hThread);
 _:
     ExitProcess(0);
     return 0;
