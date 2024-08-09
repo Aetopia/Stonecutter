@@ -125,7 +125,6 @@ int WinMainCRTStartup()
     PCWSTR lpName = *(szArgs[1]) == L'1'   ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App"
                     : *(szArgs[1]) == L'0' ? L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App"
                                            : NULL;
-    LocalFree(szArgs);
 
     CreateMutexW(NULL, FALSE, lpName);
     if (!lpName || GetLastError() == ERROR_ALREADY_EXISTS)
@@ -141,7 +140,7 @@ int WinMainCRTStartup()
     if (GetPrivateProfileIntW(L"Settings", L"Fullscreen", FALSE, szFileName) != TRUE ||
         EnumWindows(EnumWindowsProc, *(szArgs[1]) == L'1'))
         goto _;
-    LocalFree($);
+    LocalFree(szArgs);
 
     if (!(dmPelsWidth = GetPrivateProfileIntW(L"Settings", L"Width", -1, szFileName)) ||
         !(dmPelsHeight = GetPrivateProfileIntW(L"Settings", L"Height", -1, szFileName)) ||
