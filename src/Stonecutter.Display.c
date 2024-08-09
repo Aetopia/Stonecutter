@@ -26,22 +26,6 @@ BOOL EnumWindowsProc(HWND hwnd, LPARAM lParam)
     return hWnd == NULL;
 }
 
-BOOL IsImmersiveWindow()
-{
-    BOOL (*fnGetWindowBand)(HWND, PDWORD) = NULL;
-
-    if (!fnGetWindowBand)
-    {
-        HMODULE hModule = LoadLibraryExW(L"User32.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
-        fnGetWindowBand = (BOOL(*)(HWND, PDWORD))GetProcAddress(hModule, "GetWindowBand");
-        FreeLibrary(hModule);
-    }
-
-    DWORD dwBand = 0;
-    fnGetWindowBand(hWnd, &dwBand);
-    return dwBand != 1;
-}
-
 VOID $(BOOL _)
 {
     MONITORINFO mi = {.cbSize = sizeof(MONITORINFO)};
@@ -83,10 +67,22 @@ VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idOb
     if (hwnd == hWnd)
         switch (event)
         {
-        case EVENT_SYSTEM_FOREGROUND:
-            if (IsImmersiveWindow())
+        case EVENT_SYSTEM_FOREGROUND: {
+            static BOOL (*_)(HWND, PDWORD) = NULL;
+
+            if (!_)
+            {
+                HMODULE hModule = LoadLibraryExW(L"User32.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+                _ = (BOOL(*)(HWND, PDWORD))GetProcAddress(hModule, "GetWindowBand");
+                FreeLibrary(hModule);
+            }
+
+            DWORD dwBand = 0;
+            _(hWnd, &dwBand);
+            if (dwBand != 1)
                 $(TRUE);
             break;
+        }
 
         case EVENT_OBJECT_CLOAKED:
             $(FALSE);
