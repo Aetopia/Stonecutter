@@ -7,25 +7,6 @@ HWND hWnd = NULL;
 
 DWORD dmPelsWidth = 0, dmPelsHeight = 0, dmDisplayFrequency = 0;
 
-BOOL EnumWindowsProc(HWND hwnd, LPARAM lParam)
-{
-    IPropertyStore *_ = NULL;
-    SHGetPropertyStoreForWindow(hwnd, &IID_IPropertyStore, (void **)&_);
-
-    PROPVARIANT $ = {};
-    _->lpVtbl->GetValue(_, &PKEY_AppUserModel_ID, &$);
-    _->lpVtbl->Release(_);
-
-    if (CompareStringOrdinal($.pwszVal, -1,
-                             lParam ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App"
-                                    : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
-                             -1, FALSE) == CSTR_EQUAL)
-        hWnd = hwnd;
-
-    PropVariantClear(&$);
-    return !hWnd;
-}
-
 VOID $(BOOL _)
 {
     MONITORINFO mi = {.cbSize = sizeof(MONITORINFO)};
@@ -85,7 +66,8 @@ VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idOb
         }
 
         case EVENT_OBJECT_CLOAKED:
-            $(FALSE);
+        case EVENT_OBJECT_UNCLOAKED:
+            $(event == EVENT_OBJECT_UNCLOAKED);
             break;
 
         case EVENT_OBJECT_DESTROY:
@@ -119,6 +101,22 @@ HRESULT LauncherVisibilityChange(IAppVisibilityEvents *This, WINBOOL currentVisi
     return S_OK;
 }
 
+BOOL EnumWindowsProc(HWND hwnd, LPARAM lParam)
+{
+    IPropertyStore *_ = NULL;
+    SHGetPropertyStoreForWindow(hwnd, &IID_IPropertyStore, (void **)&_);
+
+    PROPVARIANT $ = {};
+    _->lpVtbl->GetValue(_, &PKEY_AppUserModel_ID, &$);
+    _->lpVtbl->Release(_);
+
+    if (CompareStringOrdinal($.pwszVal, -1, (LPCWCH)lParam, -1, FALSE) == CSTR_EQUAL)
+        hWnd = hwnd;
+
+    PropVariantClear(&$);
+    return !hWnd;
+}
+
 int WinMainCRTStartup()
 {
     INT nArgs = 0;
@@ -141,7 +139,7 @@ int WinMainCRTStartup()
         szFileName, MAX_PATH);
 
     if (GetPrivateProfileIntW(L"Settings", L"Fullscreen", FALSE, szFileName) != TRUE ||
-        EnumWindows(EnumWindowsProc, *(szArgs[1]) == L'1'))
+        EnumWindows(EnumWindowsProc, (LPARAM)lpName))
         goto _;
     LocalFree(szArgs);
 
@@ -154,6 +152,8 @@ int WinMainCRTStartup()
     SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, NULL, WinEventProc, 0, dwThreadId,
                     WINEVENT_OUTOFCONTEXT);
     SetWinEventHook(EVENT_OBJECT_CLOAKED, EVENT_OBJECT_CLOAKED, NULL, WinEventProc, 0, dwThreadId,
+                    WINEVENT_OUTOFCONTEXT);
+    SetWinEventHook(EVENT_OBJECT_UNCLOAKED, EVENT_OBJECT_UNCLOAKED, NULL, WinEventProc, 0, dwThreadId,
                     WINEVENT_OUTOFCONTEXT);
     SetWinEventHook(EVENT_OBJECT_DESTROY, EVENT_OBJECT_DESTROY, NULL, WinEventProc, 0, dwThreadId,
                     WINEVENT_OUTOFCONTEXT);
