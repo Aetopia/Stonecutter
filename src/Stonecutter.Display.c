@@ -23,7 +23,7 @@ BOOL EnumWindowsProc(HWND hwnd, LPARAM lParam)
         hWnd = hwnd;
 
     PropVariantClear(&$);
-    return hWnd == NULL;
+    return !hWnd;
 }
 
 VOID $(BOOL _)
