@@ -175,7 +175,6 @@ int WinMainCRTStartup()
     MSG _ = {};
     while (GetMessageW(&_, NULL, 0, 0))
         DispatchMessageW(&_);
-
 _:
     ExitProcess(0);
     return 0;
