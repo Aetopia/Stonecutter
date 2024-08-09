@@ -161,7 +161,7 @@ int WinMainCRTStartup()
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
     IAppVisibility *pAppVisibility = NULL;
-    IAppVisibilityEvents *p =
+    IAppVisibilityEvents *pCallback =
         &((IAppVisibilityEvents){.lpVtbl = &((IAppVisibilityEventsVtbl){
                                      QueryInterface, _, _, AppVisibilityOnMonitorChanged, LauncherVisibilityChange})});
 
@@ -171,8 +171,8 @@ int WinMainCRTStartup()
     pAppVisibility->lpVtbl->GetAppVisibilityOnMonitor(pAppVisibility,
                                                       MonitorFromPoint((POINT){}, MONITOR_DEFAULTTOPRIMARY), &$);
     if ($ == MAV_APP_VISIBLE)
-        p->lpVtbl->AppVisibilityOnMonitorChanged(NULL, NULL, MAV_UNKNOWN, MAV_APP_VISIBLE);
-    pAppVisibility->lpVtbl->Advise(pAppVisibility, p, &((DWORD){}));
+        pCallback->lpVtbl->AppVisibilityOnMonitorChanged(NULL, NULL, MAV_UNKNOWN, MAV_APP_VISIBLE);
+    pAppVisibility->lpVtbl->Advise(pAppVisibility, pCallback, &((DWORD){}));
 
     MSG _ = {};
     while (GetMessageW(&_, NULL, 0, 0))
