@@ -9,9 +9,10 @@
 PCWSTR $(PCWSTR pszPackageFamilyName)
 {
     UINT _ = 0;
-    PWSTR $ = GetPackagesByPackageFamily(pszPackageFamilyName, &((UINT32){}), NULL, &_, NULL) == ERROR_INSUFFICIENT_BUFFER
-                  ? HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * _)
-                  : NULL;
+    PWSTR $ =
+        GetPackagesByPackageFamily(pszPackageFamilyName, &((UINT32){}), NULL, &_, NULL) == ERROR_INSUFFICIENT_BUFFER
+            ? HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * _)
+            : NULL;
     GetPackagesByPackageFamily(pszPackageFamilyName, &((UINT32){1}), HeapAlloc(GetProcessHeap(), 0, sizeof(PWSTR)), &_,
                                $);
     return $;
@@ -28,7 +29,7 @@ HRESULT TaskDialogCallbackProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
     return S_OK;
 }
 
-int WinMainCRTStartup()
+VOID WinMainCRTStartup()
 {
     if ((CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS))
         goto _;
@@ -89,13 +90,14 @@ int WinMainCRTStartup()
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (LPVOID *)&pPackageDebugSettings);
 
+    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
+
     IApplicationActivationManager *pApplicationActivationManager = NULL;
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
                      &IID_IApplicationActivationManager, (LPVOID *)&pApplicationActivationManager);
     CoAllowSetForegroundWindow((IUnknown *)pApplicationActivationManager, NULL);
 
     DWORD dwProcessId = 0;
-    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
     pApplicationActivationManager->lpVtbl->ActivateApplication(
         pApplicationActivationManager,
         nButton ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App" : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
@@ -120,5 +122,4 @@ int WinMainCRTStartup()
     CloseHandle($.hThread);
 _:
     ExitProcess(0);
-    return 0;
 }
