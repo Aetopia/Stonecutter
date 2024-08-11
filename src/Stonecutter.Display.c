@@ -39,7 +39,7 @@ VOID $(BOOL _)
         }
     }
 
-    ChangeDisplaySettingsW(_ ? &dm : NULL, _ ? CDS_FULLSCREEN : 0);
+    ChangeDisplaySettingsW(_ ? &dm : NULL, CDS_FULLSCREEN);
 }
 
 VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread,
@@ -117,7 +117,7 @@ BOOL EnumWindowsProc(HWND hwnd, LPARAM lParam)
     return !hWnd;
 }
 
-VOID WinMainCRTStartup()
+int WinMainCRTStartup()
 {
     INT nArgs = 0;
     PWSTR *szArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
@@ -161,22 +161,23 @@ VOID WinMainCRTStartup()
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
     IAppVisibility *pAppVisibility = NULL;
-    CoCreateInstance(&CLSID_AppVisibility, NULL, CLSCTX_INPROC_SERVER, &IID_IAppVisibility, (LPVOID *)&pAppVisibility);
-
     IAppVisibilityEvents *pCallback =
         &((IAppVisibilityEvents){.lpVtbl = &((IAppVisibilityEventsVtbl){
                                      QueryInterface, _, _, AppVisibilityOnMonitorChanged, LauncherVisibilityChange})});
-    pAppVisibility->lpVtbl->Advise(pAppVisibility, pCallback, &((DWORD){}));
+
+    CoCreateInstance(&CLSID_AppVisibility, NULL, CLSCTX_INPROC_SERVER, &IID_IAppVisibility, (LPVOID *)&pAppVisibility);
 
     MONITOR_APP_VISIBILITY $ = MAV_UNKNOWN;
     pAppVisibility->lpVtbl->GetAppVisibilityOnMonitor(pAppVisibility,
                                                       MonitorFromPoint((POINT){}, MONITOR_DEFAULTTOPRIMARY), &$);
     if ($ == MAV_APP_VISIBLE)
         pCallback->lpVtbl->AppVisibilityOnMonitorChanged(NULL, NULL, MAV_UNKNOWN, MAV_APP_VISIBLE);
+    pAppVisibility->lpVtbl->Advise(pAppVisibility, pCallback, &((DWORD){}));
 
     MSG _ = {};
     while (GetMessageW(&_, NULL, 0, 0))
         DispatchMessageW(&_);
 _:
     ExitProcess(0);
+    return 0;
 }

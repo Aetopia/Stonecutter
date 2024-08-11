@@ -2,7 +2,7 @@
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "Stonecutter.manifest"
 0 ICON "Stonecutter.ico"
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 1, 1, 1, 0
+FILEVERSION 1, 1, 0, 0
 BEGIN
 BLOCK "StringFileInfo"
 BEGIN
@@ -10,7 +10,7 @@ BLOCK "040904b0"
 BEGIN
 VALUE "FileDescription",  "Stonecutter"
 VALUE "ProductName",      "Stonecutter"
-VALUE "ProductVersion",	  "1.1.1.0"
+VALUE "ProductVersion",	  "1.1.0.0"
 VALUE "LegalCopyright",   "Copyright (C) 2024"
 END
 END
