@@ -68,7 +68,7 @@ VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idOb
             $(event == EVENT_OBJECT_UNCLOAKED);
             break;
 
-        case EVENT_SYSTEM_FOREGROUND: 
+        case EVENT_SYSTEM_FOREGROUND:
             if (IsImmersiveWindow())
                 $(TRUE);
             break;
