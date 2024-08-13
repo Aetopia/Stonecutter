@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <shobjidl.h>
 #include <propkey.h>
+#include <dwmapi.h>
 
 HWND hWnd = NULL;
 
@@ -42,6 +43,20 @@ VOID $(BOOL _)
     ChangeDisplaySettingsW(_ ? &dm : NULL, CDS_FULLSCREEN);
 }
 
+BOOL IsImmersiveWindow()
+{
+    static BOOL (*_)(HWND, PDWORD) = NULL;
+    if (!_)
+    {
+        HMODULE hModule = LoadLibraryExW(L"User32.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        _ = (BOOL(*)(HWND, PDWORD))GetProcAddress(hModule, "GetWindowBand");
+        FreeLibrary(hModule);
+    }
+    DWORD dwBand = 0;
+    _(hWnd, &dwBand);
+    return dwBand != 1;
+}
+
 VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread,
                   DWORD dwmsEventTime)
 {
@@ -53,23 +68,17 @@ VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idOb
             $(event == EVENT_OBJECT_UNCLOAKED);
             break;
 
-        case EVENT_OBJECT_DESTROY:
-        case EVENT_SYSTEM_FOREGROUND: {
-            static BOOL (*_)(HWND, PDWORD) = NULL;
+        case EVENT_SYSTEM_FOREGROUND: 
+            if (IsImmersiveWindow())
+                $(TRUE);
+            break;
 
-            if (!_)
-            {
-                HMODULE hModule = LoadLibraryExW(L"User32.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
-                _ = (BOOL(*)(HWND, PDWORD))GetProcAddress(hModule, "GetWindowBand");
-                FreeLibrary(hModule);
-            }
-
-            DWORD dwBand = 0;
-            _(hWnd, &dwBand);
-            if (dwBand != 1)
-                $(event == EVENT_SYSTEM_FOREGROUND);
-            if (event == EVENT_OBJECT_DESTROY)
-                ExitProcess(0);
+        case EVENT_OBJECT_DESTROY: {
+            INT _ = FALSE;
+            DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &_, sizeof(INT));
+            if (IsImmersiveWindow() && !_)
+                $(FALSE);
+            ExitProcess(0);
         }
         }
 }
@@ -131,11 +140,12 @@ VOID WinMainCRTStartup()
         goto _;
 
     WCHAR szFileName[MAX_PATH] = {};
-    ExpandEnvironmentStringsW(
-        *(szArgs[1]) == L'1'
-            ? L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe\\RoamingState\\Stonecutter.ini"
-            : L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\RoamingState\\Stonecutter.ini",
-        szFileName, MAX_PATH);
+    ExpandEnvironmentStringsW(*(szArgs[1]) == L'1' ? L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftWindowsBeta_"
+                                                     L"8wekyb3d8bbwe\\RoamingState\\Stonecutter."
+                                                     L"ini"
+                                                   : L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftUWP_"
+                                                     L"8wekyb3d8bbwe\\RoamingState\\Stonecutter.ini",
+                              szFileName, MAX_PATH);
 
     if (GetPrivateProfileIntW(L"Settings", L"Fullscreen", FALSE, szFileName) != TRUE ||
         EnumWindows(EnumWindowsProc, (LPARAM)lpName))

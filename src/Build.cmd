@@ -10,7 +10,7 @@ gcc.exe -shared -nostdlib -static -s "Stonecutter.DirectX.c" "%TEMP%\.o" "%SYSTE
 
 windres.exe -i "Resources\Stonecutter.Display.rc" -o "%TEMP%\.o"
 
-gcc.exe -mwindows -nostdlib -s "Stonecutter.Display.c" "%TEMP%\.o" -lShell32 -lOle32 -lUser32 -lKernel32 -o "bin\Stonecutter.Display.exe"
+gcc.exe -mwindows -nostdlib -s "Stonecutter.Display.c" "%TEMP%\.o" -lDwmapi -lShell32 -lOle32 -lUser32 -lKernel32 -o "bin\Stonecutter.Display.exe"
 
 windres.exe -i "Resources\Stonecutter.rc" -o "%TEMP%\.o"
 
