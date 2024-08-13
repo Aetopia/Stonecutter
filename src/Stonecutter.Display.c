@@ -39,7 +39,7 @@ VOID $(BOOL _)
         }
     }
 
-    ChangeDisplaySettingsW(_ ? &dm : NULL, _ ? CDS_FULLSCREEN : 0);
+    ChangeDisplaySettingsW(_ ? &dm : NULL, CDS_FULLSCREEN);
 }
 
 VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD dwEventThread,
@@ -48,6 +48,12 @@ VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idOb
     if (hwnd == hWnd)
         switch (event)
         {
+        case EVENT_OBJECT_CLOAKED:
+        case EVENT_OBJECT_UNCLOAKED:
+            $(event == EVENT_OBJECT_UNCLOAKED);
+            break;
+
+        case EVENT_OBJECT_DESTROY:
         case EVENT_SYSTEM_FOREGROUND: {
             static BOOL (*_)(HWND, PDWORD) = NULL;
 
@@ -61,17 +67,10 @@ VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idOb
             DWORD dwBand = 0;
             _(hWnd, &dwBand);
             if (dwBand != 1)
-                $(TRUE);
-            break;
+                $(event == EVENT_SYSTEM_FOREGROUND);
+            if (event == EVENT_OBJECT_DESTROY)
+                ExitProcess(0);
         }
-
-        case EVENT_OBJECT_CLOAKED:
-        case EVENT_OBJECT_UNCLOAKED:
-            $(event == EVENT_OBJECT_UNCLOAKED);
-            break;
-
-        case EVENT_OBJECT_DESTROY:
-            ExitProcess(0);
         }
 }
 
