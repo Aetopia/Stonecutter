@@ -1,66 +1,22 @@
+#define _MINAPPMODEL_H_
 #include <initguid.h>
 #include <windows.h>
 #include <shobjidl.h>
 #include <appmodel.h>
 #include <aclapi.h>
-#include <commctrl.h>
 #include <sddl.h>
-
-PCWSTR $(PCWSTR pszPackageFamilyName)
-{
-    UINT _ = 0;
-    PWSTR $ =
-        GetPackagesByPackageFamily(pszPackageFamilyName, &((UINT32){}), NULL, &_, NULL) == ERROR_INSUFFICIENT_BUFFER
-            ? HeapAlloc(GetProcessHeap(), 0, sizeof(WCHAR) * _)
-            : NULL;
-    GetPackagesByPackageFamily(pszPackageFamilyName, &((UINT32){1}), HeapAlloc(GetProcessHeap(), 0, sizeof(PWSTR)), &_,
-                               $);
-    return $;
-}
-
-HRESULT TaskDialogCallbackProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LONG_PTR lpRefData)
-{
-    if (uMsg == TDN_CREATED)
-    {
-        LPARAM lParam = (LPARAM)LoadImageW(GetModuleHandleW(NULL), NULL, IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR);
-        SendMessageW(hWnd, WM_SETICON, ICON_SMALL, lParam);
-        SendMessageW(hWnd, WM_SETICON, ICON_BIG, lParam);
-    }
-    return S_OK;
-}
 
 VOID WinMainCRTStartup()
 {
-    if ((CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS))
+    if (CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS)
         goto _;
-
-    PCWSTR _[] = {$(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"), $(L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe")};
-    int nButton = !!_[1];
-
-    if (_[0] && _[1])
-    {
-        TaskDialogIndirect(
-            &((TASKDIALOGCONFIG){
-                .cbSize = sizeof(TASKDIALOGCONFIG),
-                .pfCallback = TaskDialogCallbackProc,
-                .pszWindowTitle = L"Stonecutter",
-                .pszMainIcon = NULL,
-                .dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW | TDF_USE_COMMAND_LINKS,
-                .cButtons = 2,
-                .pButtons = (TASKDIALOG_BUTTON[]){{.nButtonID = 0, .pszButtonText = L"Minecraft"},
-                                                  {.nButtonID = 1, .pszButtonText = L"Minecraft Preview"}}}),
-            &nButton, NULL, NULL);
-        if (nButton == IDCANCEL)
-            goto _;
-    }
 
     WCHAR szLibFileName[MAX_PATH] = {};
     QueryFullProcessImageNameW(GetCurrentProcess(), 0, szLibFileName, &((DWORD){MAX_PATH}));
-
     for (DWORD _ = lstrlenW(szLibFileName); _ < -1; _--)
         if (szLibFileName[_] == '\\')
         {
-            szLibFileName[_ = _ + 1] = '\0';
+            szLibFileName[_ + 1] = '\0';
             SetCurrentDirectoryW(szLibFileName);
             break;
         }
@@ -90,7 +46,10 @@ VOID WinMainCRTStartup()
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (LPVOID *)&pPackageDebugSettings);
 
-    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _[nButton], NULL, NULL);
+    WCHAR _[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
+    GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){1}), (PWSTR[]){},
+                               &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), _);
+    pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, _, NULL, NULL);
 
     IApplicationActivationManager *pApplicationActivationManager = NULL;
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
@@ -99,9 +58,7 @@ VOID WinMainCRTStartup()
 
     DWORD dwProcessId = 0;
     pApplicationActivationManager->lpVtbl->ActivateApplication(
-        pApplicationActivationManager,
-        nButton ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App" : L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
-        NULL, AO_NOERRORUI, &dwProcessId);
+        pApplicationActivationManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI, &dwProcessId);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress =
@@ -116,8 +73,7 @@ VOID WinMainCRTStartup()
     CloseHandle(hProcess);
 
     PROCESS_INFORMATION $ = {};
-    CreateProcessW(NULL, nButton ? L"Stonecutter.Display.exe 1" : L"Stonecutter.Display.exe 0", NULL, NULL, FALSE, 0,
-                   NULL, NULL, &((STARTUPINFOW){}), &$);
+    CreateProcessW(L"Stonecutter.Display.exe", NULL, NULL, NULL, FALSE, 0, NULL, NULL, &((STARTUPINFOW){}), &$);
     CloseHandle($.hProcess);
     CloseHandle($.hThread);
 _:

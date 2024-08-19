@@ -15,32 +15,32 @@ VOID $(BOOL _)
     if (!mi.dwFlags)
         return;
 
-    DEVMODEW dm = {};
+    DEVMODEW $ = {};
     if (_)
     {
-        dm = (DEVMODEW){.dmSize = sizeof(DEVMODEW),
-                        .dmFields = DM_DISPLAYORIENTATION | DM_DISPLAYFIXEDOUTPUT | DM_PELSWIDTH | DM_PELSHEIGHT |
-                                    DM_DISPLAYFREQUENCY,
-                        .dmDisplayOrientation = DMDO_DEFAULT,
-                        .dmDisplayFixedOutput = DMDFO_DEFAULT,
-                        .dmPelsWidth = dmPelsWidth,
-                        .dmPelsHeight = dmPelsHeight,
-                        .dmDisplayFrequency = dmDisplayFrequency};
+        $ = (DEVMODEW){.dmSize = sizeof(DEVMODEW),
+                       .dmFields = DM_DISPLAYORIENTATION | DM_DISPLAYFIXEDOUTPUT | DM_PELSWIDTH | DM_PELSHEIGHT |
+                                   DM_DISPLAYFREQUENCY,
+                       .dmDisplayOrientation = DMDO_DEFAULT,
+                       .dmDisplayFixedOutput = DMDFO_DEFAULT,
+                       .dmPelsWidth = dmPelsWidth,
+                       .dmPelsHeight = dmPelsHeight,
+                       .dmDisplayFrequency = dmDisplayFrequency};
 
-        if (ChangeDisplaySettingsW(&dm, CDS_TEST))
+        if (ChangeDisplaySettingsW(&$, CDS_TEST))
         {
-            EnumDisplaySettingsW(NULL, ENUM_REGISTRY_SETTINGS, &dm);
-            if (dm.dmDisplayOrientation == DMDO_90 || dm.dmDisplayOrientation == DMDO_270)
-                dm = (DEVMODEW){
-                    .dmSize = sizeof(DEVMODEW), .dmPelsWidth = dm.dmPelsHeight, .dmPelsHeight = dm.dmPelsWidth};
-            dm.dmDisplayOrientation = DMDO_DEFAULT;
-            dm.dmDisplayFixedOutput = DMDFO_DEFAULT;
-            dm.dmFields =
+            EnumDisplaySettingsW(NULL, ENUM_REGISTRY_SETTINGS, &$);
+            if ($.dmDisplayOrientation == DMDO_90 || $.dmDisplayOrientation == DMDO_270)
+                $ = (DEVMODEW){
+                    .dmSize = sizeof(DEVMODEW), .dmPelsWidth = $.dmPelsHeight, .dmPelsHeight = $.dmPelsWidth};
+            $.dmDisplayOrientation = DMDO_DEFAULT;
+            $.dmDisplayFixedOutput = DMDFO_DEFAULT;
+            $.dmFields =
                 DM_DISPLAYORIENTATION | DM_DISPLAYFIXEDOUTPUT | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
         }
     }
 
-    ChangeDisplaySettingsW(_ ? &dm : NULL, CDS_FULLSCREEN);
+    ChangeDisplaySettingsW(_ ? &$ : NULL, CDS_FULLSCREEN);
 }
 
 BOOL IsImmersiveWindow()
@@ -118,7 +118,7 @@ BOOL EnumWindowsProc(HWND hwnd, LPARAM lParam)
     _->lpVtbl->GetValue(_, &PKEY_AppUserModel_ID, &$);
     _->lpVtbl->Release(_);
 
-    if (CompareStringOrdinal($.pwszVal, -1, (LPCWCH)lParam, -1, FALSE) == CSTR_EQUAL)
+    if (CompareStringOrdinal($.pwszVal, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", -1, FALSE) == CSTR_EQUAL)
         hWnd = hwnd;
 
     PropVariantClear(&$);
@@ -127,30 +127,14 @@ BOOL EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
 VOID WinMainCRTStartup()
 {
-    INT nArgs = 0;
-    PWSTR *szArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
-    if (nArgs == 1)
-        goto _;
-
-    PCWSTR lpName = *(szArgs[1]) == L'1'   ? L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App"
-                    : *(szArgs[1]) == L'0' ? L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App"
-                                           : NULL;
-    CreateMutexW(NULL, FALSE, lpName);
-    if (!lpName || GetLastError() == ERROR_ALREADY_EXISTS)
-        goto _;
-
     WCHAR szFileName[MAX_PATH] = {};
-    ExpandEnvironmentStringsW(*(szArgs[1]) == L'1' ? L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftWindowsBeta_"
-                                                     L"8wekyb3d8bbwe\\RoamingState\\Stonecutter."
-                                                     L"ini"
-                                                   : L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftUWP_"
-                                                     L"8wekyb3d8bbwe\\RoamingState\\Stonecutter.ini",
+    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftUWP_"
+                              L"8wekyb3d8bbwe\\RoamingState\\Stonecutter.ini",
                               szFileName, MAX_PATH);
 
-    if (GetPrivateProfileIntW(L"Settings", L"Fullscreen", FALSE, szFileName) != TRUE ||
-        EnumWindows(EnumWindowsProc, (LPARAM)lpName))
+    if ((CreateMutexW(NULL, FALSE, L"Stonecutter.Display") && GetLastError() == ERROR_ALREADY_EXISTS) ||
+        GetPrivateProfileIntW(L"Settings", L"Fullscreen", FALSE, szFileName) != TRUE || EnumWindows(EnumWindowsProc, 0))
         goto _;
-    LocalFree(szArgs);
 
     if (!(dmPelsWidth = GetPrivateProfileIntW(L"Settings", L"Width", -1, szFileName)) ||
         !(dmPelsHeight = GetPrivateProfileIntW(L"Settings", L"Height", -1, szFileName)) ||

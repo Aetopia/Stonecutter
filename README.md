@@ -209,9 +209,9 @@ Frequency = 0
 |Key|Description|
 |-|-|
 |Fullscreen|Toggles enhanced immersive fullscreen.|
-|Width|Configure the resolution width.|
-|Height| Configure the resolution height|
-|Frequency|Configure the refresh rate.|
+|Width|Configure the display's resolution width.|
+|Height|Configure the display's resolution height.|
+|Frequency|Configure the display's frequency.|
 </details>
 
 ## Usage
@@ -231,30 +231,15 @@ Frequency = 0
 
         - Run Stonecutter from the Windows Start Menu.
 
-- Select Minecraft/Minecraft Preview.
-
-    - Minecraft/Minecraft Preview will be automatically launched if only one of them is installed.
-
-  ![image](https://github.com/user-attachments/assets/eeb95e4b-9789-4eb0-af32-299b7a11b055)
-
-
 - Once selected, Stonecutter will launch and patch the game.
 
 ## Configuration
-Stonecutter may be configured separately for Minecraft/Minecraft Preview.
 
-- Create a file called `Stonecutter.ini` in the following paths:
+- Create a file called `Stonecutter.ini` in the following path:
 
-    - Minecraft
-
-        ```
-        %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState
-        ```
-    - Minecraft Preview
-        
-        ```
-        %LOCALAPPDATA%\Packages\Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe\RoamingState
-        ```
+    ```
+    %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState
+    ```
 
 - Add the following contents:
 
