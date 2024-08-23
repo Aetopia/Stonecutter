@@ -118,7 +118,11 @@ BOOL EnumWindowsProc(HWND hwnd, LPARAM lParam)
     _->lpVtbl->GetValue(_, &PKEY_AppUserModel_ID, &$);
     _->lpVtbl->Release(_);
 
-    if (CompareStringOrdinal($.pwszVal, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", -1, FALSE) == CSTR_EQUAL)
+    WCHAR szClassName[23] = {};
+    GetClassNameW(hwnd, szClassName, 23);
+
+    if (CompareStringOrdinal($.pwszVal, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", -1, TRUE) == CSTR_EQUAL &&
+        CompareStringOrdinal(szClassName, -1, L"ApplicationFrameWindow", -1, FALSE) == CSTR_EQUAL)
         hWnd = hwnd;
 
     PropVariantClear(&$);
