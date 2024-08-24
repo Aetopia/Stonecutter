@@ -6,6 +6,10 @@
 #include <appmodel.h>
 #include <MinHook.h>
 
+NTSTATUS NtQueryTimerResolution(PULONG, PDWORD, PDWORD);
+
+NTSTATUS NtSetTimerResolution(DWORD, BOOLEAN, PDWORD);
+
 BOOL _ = FALSE, $ = FALSE;
 
 HRESULT(*IDXGISwapChain_ResizeBuffers)
@@ -86,6 +90,9 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
         HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter.DirectX");
         if (GetLastError() == ERROR_ALREADY_EXISTS)
             return !CloseHandle(hMutex);
+
+        NtQueryTimerResolution(&((DWORD){}), (PDWORD)&_, &((DWORD){}));
+        NtSetTimerResolution(_, TRUE, &((DWORD){}));
 
         WCHAR szFileName[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);

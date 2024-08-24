@@ -148,7 +148,7 @@ This has been done with Minecraft: Education Edition which is based off Minecraf
 
 Stonecutter implements this fix as follows:
 
-- Obtain the full package name of Minecraft or Minecraft Preview.
+- Obtain the full package name of Minecraft.
 
 - Enable debug mode for the package by calling `IPackageDebugSettings::EnableDebugging`.
 </details>
@@ -181,7 +181,7 @@ if (!pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)
 
 - Some features might require DirectX 12.
 
-To enable this feature for Minecraft/Minecraft Preview, add the following to Stonecutter's configuration file:<br>
+To enable this feature for Minecraft, add the following to Stonecutter's configuration file:<br>
 
 ```ini
 D3D11 = 1
@@ -197,7 +197,7 @@ This feature allows Minecraft: Bedrock Edition to run at any display mode when i
 
 - By default, the default display mode stored in the Windows Registry is used.
 
-To enable this feature for Minecraft/Minecraft Preview, add the following to Stonecutter's configuration file:<br>
+To enable this feature for Minecraft, add the following to Stonecutter's configuration file:<br>
 
 ```
 Fullscreen = 1
@@ -212,6 +212,29 @@ Frequency = 0
 |Width|Configure the display's resolution width.|
 |Height|Configure the display's resolution height.|
 |Frequency|Configure the display's frequency.|
+</details>
+
+
+<details><summary><a href="https://github.com/valleyofdoom/PC-Tuning#1148-clock-interrupt-frequency-timer-resolution">Timer Resolution</a></summary><br>
+
+This feature has Minecraft: Bedrock Edition use a timer resolution of 0.5 ms.
+
+- The timer resolution is no longer global but per-process in Windows 10 20H2.
+
+   - [This behavior may be changed in Windows 11/Windows Server 2022](https://github.com/valleyofdoom/PC-Tuning/blob/main/docs/research.md#6-fixing-timing-precision-in-windows-after-the-great-rule-change).
+
+- By default, the game uses a timer resolution 10 ms.<br>This has been likely done to conserve power.
+
+  - You may query the timer resolution using `NtQueryTimerResolution`.
+
+- Using a higher resolution increases the precision of pacing events.
+
+Stonecutter defaults to the highest possible resolution supports, typically 0.5 ms.
+
+- You may configure the timer resolution for higher precision but requires intensive benchmarking.
+   
+   - So for ease of use & simplicity sake, Stonecutter defaults to highest possible resolution.
+   
 </details>
 
 ## Usage
