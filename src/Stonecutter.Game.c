@@ -87,7 +87,7 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
             CompareStringOrdinal($, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) != CSTR_EQUAL)
             return FALSE;
 
-        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter.DirectX");
+        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter.Game");
         if (GetLastError() == ERROR_ALREADY_EXISTS)
             return !CloseHandle(hMutex);
 
