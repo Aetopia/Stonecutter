@@ -6,7 +6,7 @@
 #include <appmodel.h>
 #include <MinHook.h>
 
-NTSTATUS NtQueryTimerResolution( PINT,  PINT, PINT);
+NTSTATUS NtQueryTimerResolution(PINT, PINT, PINT);
 
 NTSTATUS NtSetTimerResolution(INT, BOOLEAN, PINT);
 
