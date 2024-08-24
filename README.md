@@ -227,7 +227,11 @@ This feature has Minecraft: Bedrock Edition use a timer resolution of 0.5 ms.
 
   - You may query the timer resolution using `NtQueryTimerResolution`.
 
-- Using a higher resolution increases the precision of pacing events.
+- Using a higher resolution increases:
+   
+   -  Precision of event pacing.
+
+   -  Multitasking responsiveness.
 
 - You may configure the timer resolution for higher precision but that requires intensive benchmarking.
    
