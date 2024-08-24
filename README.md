@@ -223,7 +223,7 @@ This feature has Minecraft: Bedrock Edition use a timer resolution of 0.5 ms.
 
    - [This behavior may be changed in Windows 11/Windows Server 2022](https://github.com/valleyofdoom/PC-Tuning/blob/main/docs/research.md#6-fixing-timing-precision-in-windows-after-the-great-rule-change).
 
-- The game uses a timer resolution of 10 milliseconds by default to save power.
+- The game uses a timer resolution of 10 ms to save power.
 
   - You may query the timer resolution using `NtQueryTimerResolution`.
 
