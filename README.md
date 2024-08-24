@@ -231,7 +231,7 @@ This feature has Minecraft: Bedrock Edition use a timer resolution of 0.5 ms.
 
 Stonecutter defaults to the highest possible resolution supports, typically 0.5 ms.
 
-- You may configure the timer resolution for higher precision but requires intensive benchmarking.
+- You may configure the timer resolution for higher precision but that requires intensive benchmarking.
    
    - So for ease of use & simplicity sake, Stonecutter defaults to the highest possible resolution.
 
