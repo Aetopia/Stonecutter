@@ -6,9 +6,9 @@
 #include <appmodel.h>
 #include <MinHook.h>
 
-NTSTATUS NtQueryTimerResolution(PULONG, PDWORD, PDWORD);
+NTSTATUS NtQueryTimerResolution( PINT,  PINT, PINT);
 
-NTSTATUS NtSetTimerResolution(DWORD, BOOLEAN, PDWORD);
+NTSTATUS NtSetTimerResolution(INT, BOOLEAN, PINT);
 
 BOOL _ = FALSE, $ = FALSE;
 
@@ -91,8 +91,8 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
         if (GetLastError() == ERROR_ALREADY_EXISTS)
             return !CloseHandle(hMutex);
 
-        NtQueryTimerResolution(&((DWORD){}), (PDWORD)&_, &((DWORD){}));
-        NtSetTimerResolution(_, TRUE, &((DWORD){}));
+        NtQueryTimerResolution(&((INT){}), &_, &((INT){}));
+        NtSetTimerResolution(_, TRUE, &((INT){}));
 
         WCHAR szFileName[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
