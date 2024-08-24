@@ -73,6 +73,6 @@ VOID WinMainCRTStartup()
     CreateProcessW(L"Stonecutter.Display.exe", NULL, NULL, NULL, FALSE, 0, NULL, NULL, &((STARTUPINFOW){}), &$);
     CloseHandle($.hProcess);
     CloseHandle($.hThread);
-_:
+
     ExitProcess(0);
 }
