@@ -8,9 +8,6 @@
 
 VOID WinMainCRTStartup()
 {
-    if (CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError() == ERROR_ALREADY_EXISTS)
-        goto _;
-
     WCHAR szLibFileName[MAX_PATH] = {};
     QueryFullProcessImageNameW(GetCurrentProcess(), 0, szLibFileName, &((DWORD){MAX_PATH}));
     for (DWORD _ = lstrlenW(szLibFileName); _ < -1; _--)

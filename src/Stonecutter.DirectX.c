@@ -1,7 +1,9 @@
+#define _MINAPPMODEL_H_
 #include <initguid.h>
 #include <windows.h>
 #include <d3d11_1.h>
 #include <d3d12.h>
+#include <appmodel.h>
 #include <MinHook.h>
 
 BOOL _ = FALSE, $ = FALSE;
@@ -76,7 +78,12 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
-        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
+        WCHAR $[PACKAGE_FAMILY_NAME_MAX_LENGTH] = {};
+        if (GetCurrentPackageFamilyName(&((UINT32){PACKAGE_FAMILY_NAME_MAX_LENGTH}), $) == APPMODEL_ERROR_NO_PACKAGE ||
+            CompareStringOrdinal($, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) != CSTR_EQUAL)
+            return FALSE;
+
+        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter.DirectX");
         if (GetLastError() == ERROR_ALREADY_EXISTS)
             return !CloseHandle(hMutex);
 
