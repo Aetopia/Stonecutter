@@ -223,13 +223,13 @@ This feature has Minecraft: Bedrock Edition use a timer resolution of 0.5 ms.
 
    - [This behavior may be changed in Windows 11/Windows Server 2022](https://github.com/valleyofdoom/PC-Tuning/blob/main/docs/research.md#6-fixing-timing-precision-in-windows-after-the-great-rule-change).
 
-- By default, the game uses a timer resolution 10 ms. This has been likely done to conserve power.
+- By default, the game uses a timer resolution of 10 ms. This has been likely done to conserve power.
 
   - You may query the timer resolution using `NtQueryTimerResolution`.
 
 - Using a higher resolution increases the precision of pacing events.
 
-Stonecutter defaults to the highest possible resolution supports, typically 0.5 ms.
+Stonecutter defaults to the highest possible resolution, typically 0.5 ms.
 
 - You may configure the timer resolution for higher precision but that requires intensive benchmarking.
    
