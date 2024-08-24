@@ -233,8 +233,8 @@ Stonecutter defaults to the highest possible resolution supports, typically 0.5 
 
 - You may configure the timer resolution for higher precision but requires intensive benchmarking.
    
-   - So for ease of use & simplicity sake, Stonecutter defaults to highest possible resolution.
-   
+   - So for ease of use & simplicity sake, Stonecutter defaults to the highest possible resolution.
+
 </details>
 
 ## Usage
