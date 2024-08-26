@@ -214,31 +214,6 @@ Frequency = 0
 |Frequency|Configure the display's frequency.|
 </details>
 
-
-<details><summary><a href="https://github.com/valleyofdoom/PC-Tuning#1148-clock-interrupt-frequency-timer-resolution">Timer Resolution</a></summary><br>
-
-This feature has Minecraft: Bedrock Edition use a timer resolution of 0.5 ms.
-
-- The timer resolution is no longer global but per-process in Windows 10 20H2.
-
-   - [This behavior may be changed in newer versions of Windows.](https://github.com/valleyofdoom/PC-Tuning/blob/main/docs/research.md#6-fixing-timing-precision-in-windows-after-the-great-rule-change)
-
-- The game doesn't set a timer resolution.
-
-  - You may query the timer resolution using `NtQueryTimerResolution`.
-
-- Using a higher resolution increases:
-   
-   -  Precision of event pacing.
-
-   -  Multitasking responsiveness.
-
-- You may configure the timer resolution for higher precision but that requires intensive benchmarking.
-   
-   - For ease of use & simplicity sake, Stonecutter defaults to the highest possible resolution.
-
-</details>
-
 ## Usage
 
 - Download the latest release from:
