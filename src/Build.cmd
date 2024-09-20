@@ -14,7 +14,7 @@ gcc.exe -mwindows -nostdlib -s "Stonecutter.Display.c" "%TEMP%\.o" -lDwmapi -lSh
 
 windres.exe -i "Resources\Stonecutter.rc" -o "%TEMP%\.o"
 
-gcc.exe -mwindows -nostdlib -s "Stonecutter.c" "%TEMP%\.o" -lOle32 -lComctl32 -lKernel32 -lUser32 -lAdvapi32 -o "bin\Stonecutter.exe"
+gcc.exe -mwindows -nostdlib -s "Stonecutter.c" "%TEMP%\.o" -lOle32 -lKernel32 -lAdvapi32 -o "bin\Stonecutter.exe"
 
 del "%TEMP%\.o">nul 2>&1
 upx.exe --best --ultra-brute "bin\Stonecutter.Game.dll" "bin\Stonecutter.Display.exe" "bin\Stonecutter.exe"

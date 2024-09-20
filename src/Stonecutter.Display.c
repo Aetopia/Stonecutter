@@ -74,8 +74,8 @@ VOID WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, LONG idOb
             break;
 
         case EVENT_OBJECT_DESTROY: {
-            INT _ = FALSE;
-            DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &_, sizeof(INT));
+            BOOL _ = FALSE;
+            DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &_, sizeof(BOOL));
             if (IsImmersiveWindow() && !_)
                 $(FALSE);
             ExitProcess(0);
