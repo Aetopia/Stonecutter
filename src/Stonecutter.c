@@ -14,13 +14,12 @@ VOID WinMainCRTStartup()
         if (szLibFileName[_] == '\\')
         {
             szLibFileName[_ + 1] = '\0';
-            SetCurrentDirectoryW(szLibFileName);
             break;
         }
 
     PACL OldAcl = NULL;
-    GetNamedSecurityInfoW(lstrcatW(szLibFileName, L"Stonecutter.Game.dll"), SE_FILE_OBJECT,
-                          DACL_SECURITY_INFORMATION, NULL, NULL, &OldAcl, NULL, NULL);
+    GetNamedSecurityInfoW(lstrcatW(szLibFileName, L"Stonecutter.Game.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
+                          NULL, NULL, &OldAcl, NULL, NULL);
 
     PSID Sid = NULL;
     ConvertStringSidToSidW(L"S-1-15-2-1", &Sid);
