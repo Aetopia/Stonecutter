@@ -33,13 +33,24 @@ HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI
     pCoreWindow->lpVtbl->get_Bounds(pCoreWindow, &_);
     pCoreWindow2->lpVtbl->put_PointerPosition(
         pCoreWindow2, (__x_ABI_CWindows_CFoundation_CPoint){_.X + (_.Width / 2), _.Y + (_.Height / 2)});
-    return _put_PointerCursor ? _put_PointerCursor(This, value) : S_OK;
+    return _put_PointerCursor(This, value);
 }
 
 HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUnknown *pWindow,
                                      DXGI_SWAP_CHAIN_DESC1 *pDesc, IDXGIOutput *pRestrictToOutput,
                                      IDXGISwapChain1 **ppSwapChain)
 {
+    if (!$)
+    {
+        $ = TRUE;
+
+        pCoreWindow = (__x_ABI_CWindows_CUI_CCore_CICoreWindow *)pWindow;
+        pWindow->lpVtbl->QueryInterface(pWindow, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pCoreWindow2);
+
+        MH_CreateHook((*(LPVOID **)pWindow)[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
+        MH_EnableHook(MH_ALL_HOOKS);
+    }
+
     ID3D12CommandQueue *pCommandQueue = NULL;
     if (_ && !pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)&pCommandQueue))
     {
@@ -47,17 +58,7 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
         return DXGI_ERROR_INVALID_CALL;
     }
 
-    if (!$)
-    {
-        pCoreWindow = (__x_ABI_CWindows_CUI_CCore_CICoreWindow *)pWindow;
-        pWindow->lpVtbl->QueryInterface(pWindow, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pCoreWindow2);
-        put_PointerCursor(NULL, NULL);
-
-        MH_CreateHook((*(LPVOID **)pWindow)[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
-        MH_EnableHook(MH_ALL_HOOKS);
-    }
-
-    $ = pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     return _CreateSwapChainForCoreWindow(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 }
 
