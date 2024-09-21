@@ -3,12 +3,20 @@
 #include <d3d11_1.h>
 #include <d3d12.h>
 #include <MinHook.h>
+#include <windows.ui.core.h>
 
 LONG NtQueryTimerResolution(PINT, PINT, PINT);
 
 LONG NtSetTimerResolution(INT, BOOLEAN, PINT);
 
+__x_ABI_CWindows_CUI_CCore_CICoreWindow *pCoreWindow = NULL;
+
+__x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pCoreWindow2 = NULL;
+
 BOOL _ = FALSE, $ = FALSE;
+
+HRESULT(*_put_PointerCursor)
+(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value) = NULL;
 
 HRESULT(*_ResizeBuffers)
 (IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags) = NULL;
@@ -18,6 +26,15 @@ HRESULT (*_Present)(IDXGISwapChain *, UINT, UINT) = NULL;
 HRESULT(*_CreateSwapChainForCoreWindow)
 (IDXGIFactory2 *This, IUnknown *pDevice, IUnknown *pWindow, const DXGI_SWAP_CHAIN_DESC1 *pDesc,
  IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain) = NULL;
+
+HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
+{
+    __x_ABI_CWindows_CFoundation_CRect _ = {};
+    pCoreWindow->lpVtbl->get_Bounds(pCoreWindow, &_);
+    pCoreWindow2->lpVtbl->put_PointerPosition(
+        pCoreWindow2, (__x_ABI_CWindows_CFoundation_CPoint){_.X + (_.Width / 2), _.Y + (_.Height / 2)});
+    return !_put_PointerCursor ? S_OK : _put_PointerCursor(This, value);
+}
 
 HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUnknown *pWindow,
                                      DXGI_SWAP_CHAIN_DESC1 *pDesc, IDXGIOutput *pRestrictToOutput,
@@ -29,6 +46,17 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
         pCommandQueue->lpVtbl->Release(pCommandQueue);
         return DXGI_ERROR_INVALID_CALL;
     }
+
+    if (!$)
+    {
+        pCoreWindow = (__x_ABI_CWindows_CUI_CCore_CICoreWindow *)pWindow;
+        pWindow->lpVtbl->QueryInterface(pWindow, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pCoreWindow2);
+        put_PointerCursor(NULL, NULL);
+
+        MH_CreateHook((*(LPVOID **)pWindow)[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
+        MH_EnableHook(MH_ALL_HOOKS);
+    }
+
     $ = pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     return _CreateSwapChainForCoreWindow(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 }
