@@ -1,9 +1,7 @@
-#define _MINAPPMODEL_H_
 #include <initguid.h>
 #include <windows.h>
 #include <d3d11_1.h>
 #include <d3d12.h>
-#include <appmodel.h>
 #include <MinHook.h>
 
 LONG NtQueryTimerResolution(PINT, PINT, PINT);
@@ -75,11 +73,6 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
-        WCHAR $[PACKAGE_FAMILY_NAME_MAX_LENGTH] = {};
-        if (GetCurrentPackageFamilyName(&((UINT32){PACKAGE_FAMILY_NAME_MAX_LENGTH}), $) == APPMODEL_ERROR_NO_PACKAGE ||
-            CompareStringOrdinal($, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) != CSTR_EQUAL)
-            return FALSE;
-
         HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter.Game");
         if (GetLastError() == ERROR_ALREADY_EXISTS)
             return !CloseHandle(hMutex);
@@ -87,9 +80,9 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
         NtQueryTimerResolution(&((INT){}), &_, &((INT){}));
         NtSetTimerResolution(_, TRUE, &((INT){}));
 
-        WCHAR szFileName[MAX_PATH] = {};
-        ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
-        _ = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, szFileName) == TRUE;
+        WCHAR $[MAX_PATH] = {};
+        ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", $, MAX_PATH);
+        _ = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, $) == TRUE;
 
         DisableThreadLibraryCalls(hinstDLL);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));
