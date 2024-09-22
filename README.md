@@ -178,7 +178,7 @@ As far as Windows is concerned, this fix can implemented as follows:
 
 Stonecutter implements this fix as follows:
 
-- Query for the interfaces & methods:
+- Query for the following interfaces & methods:
    
    - `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_Bounds`
    
