@@ -155,9 +155,17 @@ Stonecutter implements this fix as follows:
 
 <details><summary><a href="https://bugs.mojang.com/browse/MCPE-15796">MCPE-15796 - Cursor is not recentered upon the opening of a new gui.</a></summary>
 
-### Fix
+### Cause
+Minecraft: Bedrock Edition doesn't center the cursor automatically when a GUI is shown.
 
-As far as Windows is concerned, a fix can implemented as follows:
+### Analysis
+
+According to the [documentation](https://learn.microsoft.com/en-us/windows/uwp/gaming/relative-mouse-movement), an UWP app can switch between absolute mouse movement & relative mouse movement on the fly.
+
+It seems there is no effort made to center the cursor when absolute mouse movement is restored.
+
+### Fix
+As far as Windows is concerned, this fix can implemented as follows:
 
 - Check the value of [`CoreWindow.PointerCursor`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.pointercursor).
 
@@ -168,7 +176,7 @@ As far as Windows is concerned, a fix can implemented as follows:
 - Center the cursor using [`CoreWindow.PointerPosition`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.pointerposition) whenever the value is `null`.
 
 
-Stonecutter implements a fix for this as follows:
+Stonecutter implements this fix as follows:
 
 - Query for the following interfaces & methods:
    
