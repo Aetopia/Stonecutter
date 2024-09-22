@@ -188,7 +188,7 @@ Stonecutter implements this fix as follows:
 
 - Hook `__x_ABI_CWindows_CUI_CCore_CICoreWindow->put_PointerCursor` to intercept cursor changes.
 
-- Whenever the cursor needs to be changed, check if the current cursor is `null`.
+- Whenever the cursor needs to be changed, check if the current cursor is `null` by calling `get_PointerCursor`.
 
 - If `null` then center the cursor and proceed with calling the original `put_PointerCursor` method.
 
