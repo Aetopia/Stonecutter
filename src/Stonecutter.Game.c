@@ -5,14 +5,6 @@
 #include <MinHook.h>
 #include <windows.ui.core.h>
 
-LONG NtQueryTimerResolution(PINT, PINT, PINT);
-
-LONG NtSetTimerResolution(INT, BOOLEAN, PINT);
-
-__x_ABI_CWindows_CUI_CCore_CICoreWindow *pCoreWindow = NULL;
-
-__x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pCoreWindow2 = NULL;
-
 BOOL _ = FALSE, $ = FALSE;
 
 HRESULT(*_put_PointerCursor)
@@ -29,10 +21,21 @@ HRESULT(*_CreateSwapChainForCoreWindow)
 
 HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
 {
-    __x_ABI_CWindows_CFoundation_CRect _ = {};
-    pCoreWindow->lpVtbl->get_Bounds(pCoreWindow, &_);
-    pCoreWindow2->lpVtbl->put_PointerPosition(
-        pCoreWindow2, (__x_ABI_CWindows_CFoundation_CPoint){_.X + (_.Width / 2), _.Y + (_.Height / 2)});
+    __x_ABI_CWindows_CUI_CCore_CICoreCursor *$ = NULL;
+    This->lpVtbl->get_PointerCursor(This, &$);
+    if ($)
+        $->lpVtbl->Release($);
+    else
+    {
+        __x_ABI_CWindows_CFoundation_CRect _ = {};
+        This->lpVtbl->get_Bounds(This, &_);
+
+        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pCoreWindow = NULL;
+        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pCoreWindow);
+        pCoreWindow->lpVtbl->put_PointerPosition(
+            pCoreWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + (_.Width / 2), _.Y + (_.Height / 2)});
+        pCoreWindow->lpVtbl->Release(pCoreWindow);
+    }
     return _put_PointerCursor(This, value);
 }
 
@@ -43,9 +46,6 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
     if (!$)
     {
         $ = TRUE;
-
-        pCoreWindow = (__x_ABI_CWindows_CUI_CCore_CICoreWindow *)pWindow;
-        pWindow->lpVtbl->QueryInterface(pWindow, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pCoreWindow2);
 
         MH_CreateHook((*(LPVOID **)pWindow)[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
         MH_EnableHook(MH_ALL_HOOKS);
@@ -105,9 +105,6 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
         HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter.Game");
         if (GetLastError() == ERROR_ALREADY_EXISTS)
             return !CloseHandle(hMutex);
-
-        NtQueryTimerResolution(&((INT){}), &_, &((INT){}));
-        NtSetTimerResolution(_, TRUE, &((INT){}));
 
         WCHAR $[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", $, MAX_PATH);

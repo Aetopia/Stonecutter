@@ -5,7 +5,7 @@
 Fixes various bugs related to Minecraft: Bedrock Edition.
 
 ## Fixes
-<details><summary><a href=https://bugs.mojang.com/browse/MCPE-98861>MCPE-98861 - Significant input delay on devices with Render Dragon</a></summary>
+<details><summary><a href="https://bugs.mojang.com/browse/MCPE-98861">MCPE-98861 - Significant input delay on devices with Render Dragon</a></summary>
 
 ### Cause
 The cause for this bug seems to be related to how the game handles input updates.<br>
@@ -102,7 +102,7 @@ Minecraft.Windows.exe[1688]:
 ```
 </details>
 
-<details><summary><a href=https://bugs.mojang.com/browse/MCPE-109879>MCPE-109879 - Getting disconnected from server when minimizing game or switching focus to another app.</a></summary>
+<details><summary><a href="https://bugs.mojang.com/browse/MCPE-109879">MCPE-109879 - Getting disconnected from server when minimizing game or switching focus to another app.</a></summary>
 
 ### Cause
 UWP apps are controlled by the [Process Lifecycle Manager (PLM)](https://learn.microsoft.com/en-us/windows/uwp/launch-resume/app-lifecycle).
@@ -151,6 +151,66 @@ Stonecutter implements this fix as follows:
 - Obtain the full package name of Minecraft.
 
 - Enable debug mode for the package by calling `IPackageDebugSettings::EnableDebugging`.
+</details>
+
+<details><summary><a href="https://bugs.mojang.com/browse/MCPE-15796">MCPE-15796 - Cursor is not recentered upon the opening of a new gui.</a></summary>
+
+### Cause
+Minecraft: Bedrock Edition seems to not automatically center the cursor when opening a GUI container. 
+
+This causes the cursor to either: 
+
+- Retain it's previous position before a GUI container was closed.
+
+- Doesn't retain it's previous position and moves around even when a GUI container is closed.
+
+### Fix
+As far as Windows is concerned, this fix can implemented as follows:
+
+- Check the value of [`CoreWindow.PointerCursor`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.pointercursor).
+
+    - If the value is `null` this indicates a GUI container is not shown.
+
+    - If the value is not `null` this indicates a GUI container is shown.
+
+- Center the cursor using [`CoreWindow.PointerPosition`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.pointerposition) whenever the value is `null`.
+
+
+Stonecutter implements this fix as follows:
+
+- Query for the interfaces & methods:
+   
+   - `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_Bounds`
+   
+   - `__x_ABI_CWindows_CUI_CCore_CICoreWindow2->put_PointerPosition`
+
+- Hook `__x_ABI_CWindows_CUI_CCore_CICoreWindow->put_PointerCursor` to intercept cursor changes.
+
+- Center the cursor whenever the cursor is set to `null`.
+
+```c
+HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
+{
+    __x_ABI_CWindows_CUI_CCore_CICoreCursor *$ = NULL;
+    This->lpVtbl->get_PointerCursor(This, &$);
+    if ($)
+        $->lpVtbl->Release($);
+    else
+    {
+        __x_ABI_CWindows_CFoundation_CRect _ = {};
+        This->lpVtbl->get_Bounds(This, &_);
+
+        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pCoreWindow = NULL;
+        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pCoreWindow);
+        pCoreWindow->lpVtbl->put_PointerPosition(
+            pCoreWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + (_.Width / 2), _.Y + (_.Height / 2)});
+        pCoreWindow->lpVtbl->Release(pCoreWindow);
+    }
+    return _put_PointerCursor(This, value);
+}
+
+```
+
 </details>
 
 ## Features
