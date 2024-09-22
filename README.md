@@ -180,6 +180,8 @@ Stonecutter implements this fix as follows:
 
 - Query for the following interfaces & methods:
    
+   - `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_PointerCursor`
+
    - `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_Bounds`
    
    - `__x_ABI_CWindows_CUI_CCore_CICoreWindow2->put_PointerPosition`
