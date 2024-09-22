@@ -162,7 +162,7 @@ Minecraft: Bedrock Edition doesn't center the cursor automatically when a GUI is
 
 According to the [documentation](https://learn.microsoft.com/en-us/windows/uwp/gaming/relative-mouse-movement), an UWP app can switch between absolute mouse movement & relative mouse movement on the fly.
 
-It seems there is no effort made to center the cursor when absolute mouse movement is restored.
+It seems that no effort is made to center the cursor when restoring absolute mouse movement.
 
 ### Fix
 As far as Windows is concerned, this fix can implemented as follows:
