@@ -169,9 +169,9 @@ As far as Windows is concerned, this fix can implemented as follows:
 
 - Check the value of [`CoreWindow.PointerCursor`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.pointercursor).
 
-    - If the value is `null` this indicates a GUI isn't shown.
+    - If the value is `null` this indicates a GUI isn't shown or relative mouse movement is active.
 
-    - If the value is not `null` this indicates a GUI is shown.
+    - If the value is not `null` this indicates a GUI is shown or absolute mouse movement is active.
 
 - Center the cursor using [`CoreWindow.PointerPosition`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.pointerposition) whenever the value is `null`.
 
