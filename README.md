@@ -166,7 +166,7 @@ As far as Windows is concerned, a fix can implemented as follows:
 - Center the cursor using [`CoreWindow.PointerPosition`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.pointerposition) whenever the value is `null`.
 
 
-Stonecutter implements this fix as follows:
+Stonecutter implements a fix for this as follows:
 
 - Query for the following interfaces & methods:
    
