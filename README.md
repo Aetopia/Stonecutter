@@ -156,8 +156,7 @@ Stonecutter implements this fix as follows:
 <details><summary><a href="https://bugs.mojang.com/browse/MCPE-15796">MCPE-15796 - Cursor is not recentered upon the opening of a new gui.</a></summary>
 
 ### Cause
-Minecraft: Bedrock Edition doesn't center the cursor automatically when a GUI is opened.<br>
-Instead the cursor retains its previous position.
+Minecraft: Bedrock Edition doesn't center the cursor automatically when a GUI is opened but retains it's previous position.
 
 ### Fix
 As far as Windows is concerned, this fix can implemented as follows:
