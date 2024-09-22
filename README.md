@@ -156,22 +156,17 @@ Stonecutter implements this fix as follows:
 <details><summary><a href="https://bugs.mojang.com/browse/MCPE-15796">MCPE-15796 - Cursor is not recentered upon the opening of a new gui.</a></summary>
 
 ### Cause
-Minecraft: Bedrock Edition doesn't center the cursor automatically when the GUI is opened.
-
-This causes the cursor to either: 
-
-- Retain it's previous position before the GUI was closed.
-
-- Doesn't retain it's previous position and moves around even when the GUI is closed.
+Minecraft: Bedrock Edition doesn't center the cursor automatically when a GUI is opened.<br>
+Instead the cursor retains its previous position.
 
 ### Fix
 As far as Windows is concerned, this fix can implemented as follows:
 
 - Check the value of [`CoreWindow.PointerCursor`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.pointercursor).
 
-    - If the value is `null` this indicates the GUI is not shown.
+    - If the value is `null` this indicates a GUI isn't shown.
 
-    - If the value is not `null` this indicates the GUI is shown.
+    - If the value is not `null` this indicates a GUI is shown.
 
 - Center the cursor using [`CoreWindow.PointerPosition`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.core.corewindow.pointerposition) whenever the value is `null`.
 
