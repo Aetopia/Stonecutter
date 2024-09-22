@@ -212,12 +212,6 @@ HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI
 }
 ```
 
-- Check if cursor is `null`.
-
-- If `null` then get the bounds of the UWP app's window.
-
-- Center the cursor.
-
 </details>
 
 ## Features
