@@ -30,11 +30,11 @@ HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI
         __x_ABI_CWindows_CFoundation_CRect _ = {};
         This->lpVtbl->get_Bounds(This, &_);
 
-        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pCoreWindow = NULL;
-        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pCoreWindow);
-        pCoreWindow->lpVtbl->put_PointerPosition(
-            pCoreWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + (_.Width / 2), _.Y + (_.Height / 2)});
-        pCoreWindow->lpVtbl->Release(pCoreWindow);
+        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pWindow = NULL;
+        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pWindow);
+        pWindow->lpVtbl->put_PointerPosition(
+            pWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + (_.Width / 2), _.Y + (_.Height / 2)});
+        pWindow->lpVtbl->Release(pWindow);
     }
     return _put_PointerCursor(This, value);
 }
