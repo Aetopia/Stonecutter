@@ -192,6 +192,7 @@ Stonecutter implements this fix as follows:
 
 - If `null` then center the cursor and proceed with calling the original `put_PointerCursor` method.
 
+
 ```c
 HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
 {
