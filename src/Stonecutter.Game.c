@@ -21,7 +21,7 @@ HRESULT put_PointerCursor(void *This, void *value)
 {
     HCURSOR hCursor = GetCursor();
     HRESULT _ = _put_PointerCursor(This, value);
-    if (!hCursor)
+    if (!hCursor && !_)
     {
         struct
         {
