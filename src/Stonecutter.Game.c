@@ -14,8 +14,8 @@ HRESULT (*_ResizeBuffers)(IDXGISwapChain *, UINT, UINT, UINT, DXGI_FORMAT, UINT)
 
 HRESULT (*_Present)(IDXGISwapChain *, UINT, UINT) = NULL;
 
-HRESULT(*_CreateSwapChainForCoreWindow)
-(IDXGIFactory2 *, IUnknown *, IUnknown *, const DXGI_SWAP_CHAIN_DESC1 *, IDXGIOutput *, IDXGISwapChain1 **) = NULL;
+HRESULT (*_CreateSwapChainForCoreWindow)
+(IDXGIFactory2 *, IUnknown *, IUnknown *, DXGI_SWAP_CHAIN_DESC1 *, IDXGIOutput *, IDXGISwapChain1 **) = NULL;
 
 HRESULT put_PointerCursor(void *This, void *value)
 {
