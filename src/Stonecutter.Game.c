@@ -4,7 +4,7 @@
 #include <d3d12.h>
 #include <MinHook.h>
 
-BOOL fD3D11 = FALSE, fInitialized = FALSE;
+BOOL fD3D11 = FALSE, fEnabled = FALSE;
 
 HRESULT (*get_Bounds)(void *, void *) = NULL;
 
@@ -40,9 +40,9 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
                                      DXGI_SWAP_CHAIN_DESC1 *pDesc, IDXGIOutput *pRestrictToOutput,
                                      IDXGISwapChain1 **ppSwapChain)
 {
-    if (!fInitialized)
+    if (!fEnabled)
     {
-        fInitialized = TRUE;
+        fEnabled = TRUE;
         LPVOID *lpVtbl = *(LPVOID **)pWindow;
         get_Bounds = lpVtbl[7];
         MH_CreateHook(lpVtbl[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
@@ -62,7 +62,7 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
 
 HRESULT Present(IDXGISwapChain *This, UINT SyncInterval, UINT Flags)
 {
-    return fInitialized ? _Present(This, 0, DXGI_PRESENT_ALLOW_TEARING) : DXGI_ERROR_DEVICE_RESET;
+    return fEnabled ? _Present(This, 0, DXGI_PRESENT_ALLOW_TEARING) : DXGI_ERROR_DEVICE_RESET;
 }
 
 HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
