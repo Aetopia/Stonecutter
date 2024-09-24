@@ -178,40 +178,32 @@ As far as Windows is concerned, this fix can implemented as follows:
 
 Stonecutter implements this fix as follows:
 
-- Query for the following interfaces & methods:
-   
-   - `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_PointerCursor`
-
-   - `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_Bounds`
-   
-   - `__x_ABI_CWindows_CUI_CCore_CICoreWindow2->put_PointerPosition`
-
 - Hook `__x_ABI_CWindows_CUI_CCore_CICoreWindow->put_PointerCursor` to intercept cursor changes.
 
-- Whenever the cursor needs to be changed, check if the current cursor is `null` by calling `get_PointerCursor`.
+- Get the current cursor by calling `GetCursor()`.
 
-- If `null` then center the cursor and proceed with calling the original `put_PointerCursor` method.
+- Call the original `put_PointerCursor` method to change the current cursor.
 
+- Now if the previous cursor was `null` then center the cursor.
 
 ```c
-HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
+HRESULT put_PointerCursor(void *This, void *value)
 {
-    __x_ABI_CWindows_CUI_CCore_CICoreCursor *$ = NULL;
-    This->lpVtbl->get_PointerCursor(This, &$);
-    if ($)
-        $->lpVtbl->Release($);
-    else
+    HCURSOR hCursor = GetCursor();
+    HRESULT _ = _put_PointerCursor(This, value);
+    if (!hCursor)
     {
-        __x_ABI_CWindows_CFoundation_CRect _ = {};
-        This->lpVtbl->get_Bounds(This, &_);
-
-        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pWindow = NULL;
-        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pWindow);
-        pWindow->lpVtbl->put_PointerPosition(
-            pWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + _.Width / 2, _.Y + _.Height / 2});
-        pWindow->lpVtbl->Release(pWindow);
+        struct
+        {
+            FLOAT X;
+            FLOAT Y;
+            FLOAT Width;
+            FLOAT Height;
+        } _ = {};
+        get_Bounds(This, &_);
+        SetCursorPos(_.X + _.Width / 2, _.Y + _.Height / 2);
     }
-    return _put_PointerCursor(This, value);
+    return _;
 }
 ```
 

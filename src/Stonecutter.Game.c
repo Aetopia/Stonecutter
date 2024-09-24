@@ -3,56 +3,54 @@
 #include <d3d11_1.h>
 #include <d3d12.h>
 #include <MinHook.h>
-#include <windows.ui.core.h>
 
-BOOL _ = FALSE, $ = FALSE;
+BOOL fD3D11 = FALSE, fInitialized = FALSE;
 
-HRESULT(*_put_PointerCursor)
-(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value) = NULL;
+HRESULT (*_put_PointerCursor)(void *, void *) = NULL;
 
-HRESULT(*_ResizeBuffers)
-(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags) = NULL;
+HRESULT (*get_Bounds)(void *, void *) = NULL;
+
+HRESULT (*_ResizeBuffers)(IDXGISwapChain *, UINT, UINT, UINT, DXGI_FORMAT, UINT) = NULL;
 
 HRESULT (*_Present)(IDXGISwapChain *, UINT, UINT) = NULL;
 
 HRESULT(*_CreateSwapChainForCoreWindow)
-(IDXGIFactory2 *This, IUnknown *pDevice, IUnknown *pWindow, const DXGI_SWAP_CHAIN_DESC1 *pDesc,
- IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain) = NULL;
+(IDXGIFactory2 *, IUnknown *, IUnknown *, const DXGI_SWAP_CHAIN_DESC1 *, IDXGIOutput *, IDXGISwapChain1 **) = NULL;
 
-HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
+HRESULT put_PointerCursor(void *This, void *value)
 {
-    __x_ABI_CWindows_CUI_CCore_CICoreCursor *$ = NULL;
-    This->lpVtbl->get_PointerCursor(This, &$);
-    if ($)
-        $->lpVtbl->Release($);
-    else
+    HCURSOR hCursor = GetCursor();
+    HRESULT _ = _put_PointerCursor(This, value);
+    if (!hCursor)
     {
-        __x_ABI_CWindows_CFoundation_CRect _ = {};
-        This->lpVtbl->get_Bounds(This, &_);
-
-        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pWindow = NULL;
-        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pWindow);
-        pWindow->lpVtbl->put_PointerPosition(
-            pWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + _.Width / 2, _.Y + _.Height / 2});
-        pWindow->lpVtbl->Release(pWindow);
+        struct
+        {
+            FLOAT X;
+            FLOAT Y;
+            FLOAT Width;
+            FLOAT Height;
+        } _ = {};
+        get_Bounds(This, &_);
+        SetCursorPos(_.X + _.Width / 2, _.Y + _.Height / 2);
     }
-    return _put_PointerCursor(This, value);
+    return _;
 }
 
 HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUnknown *pWindow,
                                      DXGI_SWAP_CHAIN_DESC1 *pDesc, IDXGIOutput *pRestrictToOutput,
                                      IDXGISwapChain1 **ppSwapChain)
 {
-    if (!$)
+    if (!fInitialized)
     {
-        $ = TRUE;
-
-        MH_CreateHook((*(LPVOID **)pWindow)[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
+        fInitialized = TRUE;
+        LPVOID *lpVtbl = *(LPVOID **)pWindow;
+        get_Bounds = lpVtbl[7];
+        MH_CreateHook(lpVtbl[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
         MH_EnableHook(MH_ALL_HOOKS);
     }
 
     ID3D12CommandQueue *pCommandQueue = NULL;
-    if (_ && !pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)&pCommandQueue))
+    if (fD3D11 && !pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)&pCommandQueue))
     {
         pCommandQueue->lpVtbl->Release(pCommandQueue);
         return DXGI_ERROR_INVALID_CALL;
@@ -64,7 +62,7 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
 
 HRESULT Present(IDXGISwapChain *This, UINT SyncInterval, UINT Flags)
 {
-    return $ ? _Present(This, 0, DXGI_PRESENT_ALLOW_TEARING) : DXGI_ERROR_DEVICE_RESET;
+    return fInitialized ? _Present(This, 0, DXGI_PRESENT_ALLOW_TEARING) : DXGI_ERROR_DEVICE_RESET;
 }
 
 HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
@@ -75,8 +73,12 @@ HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT H
 
 DWORD ThreadProc(LPVOID lpParameter)
 {
+    MH_Initialize();
+
     IDXGIFactory2 *pFactory = NULL;
     CreateDXGIFactory(&IID_IDXGIFactory2, (void **)&pFactory);
+    MH_CreateHook((*(LPVOID **)pFactory)[16], &CreateSwapChainForCoreWindow, (LPVOID *)&_CreateSwapChainForCoreWindow);
+    pFactory->lpVtbl->Release(pFactory);
 
     IDXGISwapChain *pSwapChain = NULL;
     D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, NULL, 0, D3D11_SDK_VERSION,
@@ -86,16 +88,12 @@ DWORD ThreadProc(LPVOID lpParameter)
                                                            .Windowed = TRUE,
                                                            .OutputWindow = GetDesktopWindow()}),
                                   &pSwapChain, NULL, NULL, NULL);
-
-    MH_Initialize();
-    MH_CreateHook((*(LPVOID **)pFactory)[16], &CreateSwapChainForCoreWindow, (LPVOID *)&_CreateSwapChainForCoreWindow);
-    MH_CreateHook((*(LPVOID **)pSwapChain)[8], &Present, (LPVOID *)&_Present);
-    MH_CreateHook((*(LPVOID **)pSwapChain)[13], &ResizeBuffers, (LPVOID *)&_ResizeBuffers);
-    MH_EnableHook(MH_ALL_HOOKS);
-
-    pFactory->lpVtbl->Release(pFactory);
+    LPVOID *lpVtbl = *(LPVOID **)pSwapChain;
+    MH_CreateHook(lpVtbl[8], &Present, (LPVOID *)&_Present);
+    MH_CreateHook(lpVtbl[13], &ResizeBuffers, (LPVOID *)&_ResizeBuffers);
     pSwapChain->lpVtbl->Release(pSwapChain);
-    return 0;
+
+    return MH_EnableHook(MH_ALL_HOOKS);
 }
 
 BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
@@ -108,7 +106,7 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 
         WCHAR $[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", $, MAX_PATH);
-        _ = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, $) == TRUE;
+        fD3D11 = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, $) == TRUE;
 
         DisableThreadLibraryCalls(hinstDLL);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));
