@@ -6,9 +6,9 @@
 
 BOOL fD3D11 = FALSE, fInitialized = FALSE;
 
-HRESULT (*_put_PointerCursor)(void *, void *) = NULL;
-
 HRESULT (*get_Bounds)(void *, void *) = NULL;
+
+HRESULT (*_put_PointerCursor)(void *, void *) = NULL;
 
 HRESULT (*_ResizeBuffers)(IDXGISwapChain *, UINT, UINT, UINT, DXGI_FORMAT, UINT) = NULL;
 
