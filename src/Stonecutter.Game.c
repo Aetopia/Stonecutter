@@ -110,7 +110,7 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
             CloseHandle(hMutex);
             return FALSE;
         }
-        
+
         DisableThreadLibraryCalls(hinstDLL);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));
     }
