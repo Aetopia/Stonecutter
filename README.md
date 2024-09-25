@@ -180,30 +180,33 @@ Stonecutter implements this fix as follows:
 
 - Hook `__x_ABI_CWindows_CUI_CCore_CICoreWindow->put_PointerCursor` to intercept cursor changes.
 
-- Get the current cursor by calling `GetCursor()`.
+- Get the current cursor by calling `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_PointerCursor`.
 
-- Call the original `put_PointerCursor` method to change the current cursor.
+- Check if the current cursor was `null`, if null then:
+  
+  - Get the current bounds of the window by calling `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_Bounds`.
 
-- Now if the previous cursor was `null` then center the cursor.
+  - Center the cursor using `__x_ABI_CWindows_CUI_CCore_CICoreWindow2->put_PointerPosition`.
 
 ```c
-HRESULT put_PointerCursor(void *This, void *value)
+HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
 {
-    HCURSOR hCursor = GetCursor();
-    HRESULT _ = _put_PointerCursor(This, value);
-    if (!hCursor)
+    __x_ABI_CWindows_CUI_CCore_CICoreCursor *pCursor = NULL;
+    This->lpVtbl->get_PointerCursor(This, &pCursor);
+    if (pCursor)
+        pCursor->lpVtbl->Release(pCursor);
+    else
     {
-        struct
-        {
-            FLOAT X;
-            FLOAT Y;
-            FLOAT Width;
-            FLOAT Height;
-        } _ = {};
-        get_Bounds(This, &_);
-        SetCursorPos(_.X + _.Width / 2, _.Y + _.Height / 2);
+        __x_ABI_CWindows_CFoundation_CRect _ = {};
+        This->lpVtbl->get_Bounds(This, &_);
+
+        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pWindow = NULL;
+        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pWindow);
+        pWindow->lpVtbl->put_PointerPosition(
+            pWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + _.Width / 2, _.Y + _.Height / 2});
+        pWindow->lpVtbl->Release(pWindow);
     }
-    return _;
+    return _put_PointerCursor(This, value);
 }
 ```
 
