@@ -15,7 +15,8 @@ HRESULT (*_ResizeBuffers)(IDXGISwapChain *, UINT, UINT, UINT, DXGI_FORMAT, UINT)
 HRESULT (*_Present)(IDXGISwapChain *, UINT, UINT) = NULL;
 
 HRESULT(*_CreateSwapChainForCoreWindow)
-(IDXGIFactory2 *, IUnknown *, IUnknown *, DXGI_SWAP_CHAIN_DESC1 *, IDXGIOutput *, IDXGISwapChain1 **) = NULL;
+(IDXGIFactory2 *, IUnknown *, __x_ABI_CWindows_CUI_CCore_CICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, IDXGIOutput *,
+ IDXGISwapChain1 **) = NULL;
 
 HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
 {
@@ -37,9 +38,9 @@ HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI
     return _put_PointerCursor(This, value);
 }
 
-HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUnknown *pWindow,
-                                     DXGI_SWAP_CHAIN_DESC1 *pDesc, IDXGIOutput *pRestrictToOutput,
-                                     IDXGISwapChain1 **ppSwapChain)
+HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
+                                     __x_ABI_CWindows_CUI_CCore_CICoreWindow *pWindow, DXGI_SWAP_CHAIN_DESC1 *pDesc,
+                                     IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain)
 {
     if (!fEnabled)
     {
