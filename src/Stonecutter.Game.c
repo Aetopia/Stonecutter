@@ -73,6 +73,10 @@ HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT H
 
 DWORD ThreadProc(LPVOID lpParameter)
 {
+    WCHAR szFileName[MAX_PATH] = {};
+    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
+    fD3D11 = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, szFileName) == TRUE;
+
     MH_Initialize();
 
     IDXGIFactory2 *pFactory = NULL;
@@ -101,13 +105,12 @@ BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
         HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter.Game");
-        if (GetLastError() == ERROR_ALREADY_EXISTS)
-            return !CloseHandle(hMutex);
-
-        WCHAR $[MAX_PATH] = {};
-        ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", $, MAX_PATH);
-        fD3D11 = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, $) == TRUE;
-
+        if (GetLastError())
+        {
+            CloseHandle(hMutex);
+            return FALSE;
+        }
+        
         DisableThreadLibraryCalls(hinstDLL);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));
     }
