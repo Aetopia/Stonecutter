@@ -1,39 +1,40 @@
 #include <initguid.h>
 #include <windows.h>
+#include <windows.ui.core.h>
 #include <d3d11_1.h>
 #include <d3d12.h>
 #include <MinHook.h>
 
 BOOL fD3D11 = FALSE, fEnabled = FALSE;
 
-HRESULT (*get_Bounds)(void *, void *) = NULL;
-
-HRESULT (*_put_PointerCursor)(void *, void *) = NULL;
+HRESULT(*_put_PointerCursor)
+(__x_ABI_CWindows_CUI_CCore_CICoreWindow *, __x_ABI_CWindows_CUI_CCore_CICoreCursor *) = NULL;
 
 HRESULT (*_ResizeBuffers)(IDXGISwapChain *, UINT, UINT, UINT, DXGI_FORMAT, UINT) = NULL;
 
 HRESULT (*_Present)(IDXGISwapChain *, UINT, UINT) = NULL;
 
-HRESULT (*_CreateSwapChainForCoreWindow)
+HRESULT(*_CreateSwapChainForCoreWindow)
 (IDXGIFactory2 *, IUnknown *, IUnknown *, DXGI_SWAP_CHAIN_DESC1 *, IDXGIOutput *, IDXGISwapChain1 **) = NULL;
 
-HRESULT put_PointerCursor(void *This, void *value)
+HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
 {
-    HCURSOR hCursor = GetCursor();
-    HRESULT _ = _put_PointerCursor(This, value);
-    if (!hCursor && !_)
+    __x_ABI_CWindows_CUI_CCore_CICoreCursor *pCursor = NULL;
+    This->lpVtbl->get_PointerCursor(This, &pCursor);
+    if (pCursor)
+        pCursor->lpVtbl->Release(pCursor);
+    else
     {
-        struct
-        {
-            FLOAT X;
-            FLOAT Y;
-            FLOAT Width;
-            FLOAT Height;
-        } _ = {};
-        get_Bounds(This, &_);
-        SetCursorPos(_.X + _.Width / 2, _.Y + _.Height / 2);
+        __x_ABI_CWindows_CFoundation_CRect _ = {};
+        This->lpVtbl->get_Bounds(This, &_);
+
+        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pWindow = NULL;
+        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pWindow);
+        pWindow->lpVtbl->put_PointerPosition(
+            pWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + _.Width / 2, _.Y + _.Height / 2});
+        pWindow->lpVtbl->Release(pWindow);
     }
-    return _;
+    return _put_PointerCursor(This, value);
 }
 
 HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUnknown *pWindow,
@@ -43,9 +44,7 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice, IUn
     if (!fEnabled)
     {
         fEnabled = TRUE;
-        LPVOID *lpVtbl = *(LPVOID **)pWindow;
-        get_Bounds = lpVtbl[7];
-        MH_CreateHook(lpVtbl[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
+        MH_CreateHook((*(LPVOID **)pWindow)[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
         MH_EnableHook(MH_ALL_HOOKS);
     }
 
