@@ -300,7 +300,7 @@ Frequency = 0
     %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState
     ```
 
-- Create the following files & contents:
+- Create the following files:
 
   - `Game.ini`
     
