@@ -22,9 +22,9 @@ HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI
 {
     __x_ABI_CWindows_CUI_CCore_CICoreCursor *pCursor = NULL;
     This->lpVtbl->get_PointerCursor(This, &pCursor);
-    if (pCursor)
-        pCursor->lpVtbl->Release(pCursor);
-    else
+    HRESULT hResult = _put_PointerCursor(This, value);
+
+    if (!pCursor && !hResult)
     {
         __x_ABI_CWindows_CFoundation_CRect _ = {};
         This->lpVtbl->get_Bounds(This, &_);
@@ -35,7 +35,10 @@ HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI
             pWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + _.Width / 2, _.Y + _.Height / 2});
         pWindow->lpVtbl->Release(pWindow);
     }
-    return _put_PointerCursor(This, value);
+    else
+        pCursor->lpVtbl->Release(pCursor);
+
+    return hResult;
 }
 
 HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
