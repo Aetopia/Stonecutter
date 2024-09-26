@@ -182,9 +182,7 @@ Stonecutter implements this fix as follows:
 
 - Get the current cursor by calling `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_PointerCursor`.
 
-- Call the original `__x_ABI_CWindows_CUI_CCore_CICoreWindow->put_PointerCursor` method to change the cursor.
-
-- If the cursor was `null` & changed successfully:
+- If the cursor is `null`:
   
   - Get the current bounds of the window by calling `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_Bounds`.
 
@@ -195,9 +193,8 @@ HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI
 {
     __x_ABI_CWindows_CUI_CCore_CICoreCursor *pCursor = NULL;
     This->lpVtbl->get_PointerCursor(This, &pCursor);
-    HRESULT hResult = _put_PointerCursor(This, value);
 
-    if (!pCursor && !hResult)
+    if (!pCursor)
     {
         __x_ABI_CWindows_CFoundation_CRect _ = {};
         This->lpVtbl->get_Bounds(This, &_);
@@ -211,7 +208,7 @@ HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI
     else
         pCursor->lpVtbl->Release(pCursor);
 
-    return hResult;
+    return _put_PointerCursor(This, value);
 }
 ```
 
