@@ -74,7 +74,7 @@ HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT H
 DWORD ThreadProc(LPVOID lpParameter)
 {
     WCHAR szFileName[MAX_PATH] = {};
-    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
+    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter\\Game.ini", szFileName, MAX_PATH);
     fD3D11 = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, szFileName) == TRUE;
 
     MH_Initialize();

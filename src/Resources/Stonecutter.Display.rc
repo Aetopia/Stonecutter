@@ -1,7 +1,7 @@
 #include <windows.h>
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "Stonecutter.Display.manifest"
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 1, 1, 1, 0
+FILEVERSION 1, 1, 2, 0
 BEGIN
 BLOCK "StringFileInfo"
 BEGIN
@@ -9,7 +9,7 @@ BLOCK "040904b0"
 BEGIN
 VALUE "FileDescription",  "Stonecutter: Display"
 VALUE "ProductName",      "Stonecutter: Display"
-VALUE "ProductVersion",	  "1.1.1.0"
+VALUE "ProductVersion",	  "1.1.2.0"
 VALUE "LegalCopyright",   "Copyright (C) 2024"
 END
 END

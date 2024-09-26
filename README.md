@@ -240,7 +240,7 @@ if (!pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)
 
 - Some features might require DirectX 12.
 
-To enable this feature for Minecraft, add the following to Stonecutter's configuration file:<br>
+To enable this feature for Minecraft, add the following to `Game.ini`:<br>
 
 ```ini
 D3D11 = 1
@@ -256,7 +256,7 @@ This feature allows Minecraft: Bedrock Edition to run at any display mode when i
 
 - By default, the default display mode stored in the Windows Registry is used.
 
-To enable this feature for Minecraft, add the following to Stonecutter's configuration file:<br>
+To enable this feature for Minecraft, add the following to `Display.ini`:<br>
 
 ```
 Fullscreen = 1
@@ -294,24 +294,36 @@ Frequency = 0
 
 ## Configuration
 
-- Create a file called `Stonecutter.ini` in the following path:
+- Create a folder called `Stonecutter` in the following path:
 
     ```
     %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState
     ```
 
-- Add the following contents:
+- Create the following files & contents:
 
+  - `Game.ini`
+    
     ```ini
     [Settings]
     D3D11 = 0
+    ```
+
+  - `Display.ini`
+
+    ```ini
+    [Settings]
     Fullscreen = 0
     Width = 0
     Height = 0
     Frequency = 0
     ```
 
-- Save the file.
+- Save the files to:
+  
+  ```
+  %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState\Stonecutter
+  ```
 
 ## Notes
 

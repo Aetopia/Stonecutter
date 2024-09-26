@@ -133,7 +133,7 @@ VOID WinMainCRTStartup()
 {
     WCHAR szFileName[MAX_PATH] = {};
     ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftUWP_"
-                              L"8wekyb3d8bbwe\\RoamingState\\Stonecutter.ini",
+                              L"8wekyb3d8bbwe\\RoamingState\\Stonecutter\\Display.ini",
                               szFileName, MAX_PATH);
 
     if ((CreateMutexW(NULL, FALSE, L"Stonecutter.Display") && GetLastError() == ERROR_ALREADY_EXISTS) ||

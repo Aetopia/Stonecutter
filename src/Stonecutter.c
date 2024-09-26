@@ -14,6 +14,7 @@ VOID WinMainCRTStartup()
         if (szLibFileName[_] == '\\')
         {
             szLibFileName[_ + 1] = '\0';
+            SetCurrentDirectoryW(szLibFileName);
             break;
         }
 
