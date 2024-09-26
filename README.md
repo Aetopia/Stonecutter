@@ -184,7 +184,7 @@ Stonecutter implements this fix as follows:
 
 - Call the original `__x_ABI_CWindows_CUI_CCore_CICoreWindow->put_PointerCursor` method to change the cursor.
 
-- If the cursor was `null` & the cursor changed successfully:
+- If the cursor was `null` & changed successfully:
   
   - Get the current bounds of the window by calling `__x_ABI_CWindows_CUI_CCore_CICoreWindow->get_Bounds`.
 
