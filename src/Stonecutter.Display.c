@@ -3,7 +3,6 @@
 #include <shobjidl.h>
 #include <propkey.h>
 #include <dwmapi.h>
-#include <shellapi.h>
 
 HWND hWnd = NULL;
 
