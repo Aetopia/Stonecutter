@@ -13,6 +13,8 @@
 #define NOKANJI
 #define NOCRYPT
 #define NOMCX
+#define NOSERVICE
+#define NOIME
 
 #include <initguid.h>
 #include <windows.h>

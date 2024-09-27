@@ -15,6 +15,7 @@
 #define NOKANJI
 #define NOCRYPT
 #define NOMCX
+#define NOIME
 #define _MINAPPMODEL_H_
 
 #include <initguid.h>

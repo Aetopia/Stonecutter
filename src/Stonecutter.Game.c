@@ -15,6 +15,7 @@
 #define NOKANJI
 #define NOCRYPT
 #define NOMCX
+#define NOIME
 
 #include <initguid.h>
 #include <windows.ui.core.h>
