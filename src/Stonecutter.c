@@ -1,4 +1,22 @@
+#define WIN32_LEAN_AND_MEAN
+#define NOATOM
+#define NOGDI
+#define NOGDICAPMASKS
+#define NOMETAFILE
+#define NOMINMAX
+#define NOOPENFILE
+#define NORASTEROPS
+#define NOSCROLL
+#define NOSOUND
+#define NOSYSMETRICS
+#define NOTEXTMETRIC
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOCRYPT
+#define NOMCX
 #define _MINAPPMODEL_H_
+
 #include <initguid.h>
 #include <windows.h>
 #include <shobjidl.h>

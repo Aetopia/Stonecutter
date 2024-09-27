@@ -1,8 +1,25 @@
+#define WIN32_LEAN_AND_MEAN
+#define NOATOM
+#define NOGDICAPMASKS
+#define NOMETAFILE
+#define NOMINMAX
+#define NOOPENFILE
+#define NORASTEROPS
+#define NOSCROLL
+#define NOSOUND
+#define NOSYSMETRICS
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOCRYPT
+#define NOMCX
+
 #include <initguid.h>
 #include <windows.h>
 #include <shobjidl.h>
 #include <propkey.h>
 #include <dwmapi.h>
+#include <shellapi.h>
 
 HWND hWnd = NULL;
 
