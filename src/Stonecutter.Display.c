@@ -1,5 +1,4 @@
 #include <initguid.h>
-#include <windows.h>
 #include <shobjidl.h>
 #include <propkey.h>
 #include <dwmapi.h>

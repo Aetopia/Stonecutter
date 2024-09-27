@@ -1,6 +1,5 @@
 #define _MINAPPMODEL_H_
 #include <initguid.h>
-#include <windows.h>
 #include <shobjidl.h>
 #include <appmodel.h>
 #include <aclapi.h>
