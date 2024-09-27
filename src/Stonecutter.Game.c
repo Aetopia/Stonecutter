@@ -1,7 +1,7 @@
 #include <initguid.h>
-#include <windows.h>
 #include <windows.ui.core.h>
-#include <d3d11_4.h>
+#include <d3d11.h>
+#include <dxgi1_3.h>
 #include <d3d12.h>
 #include <MinHook.h>
 
