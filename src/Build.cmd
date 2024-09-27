@@ -18,5 +18,5 @@ gcc.exe -Os -Wl,--gc-sections -mwindows -nostdlib -s "Stonecutter.c" "%TEMP%\.o"
 
 echo Compressing...
 del "%TEMP%\.o">nul 2>&1
-upx.exe --best --ultra-brute "bin\Stonecutter.Game.dll" "bin\Stonecutter.Display.exe" "bin\Stonecutter.exe">nul 2>&1
+upx.exe --best --ultra-brute "bin\*">nul 2>&1
 powershell.exe -Command "$ProgressPreference = 'SilentlyContinue'; Compress-Archive -Path 'bin\*' -DestinationPath 'bin\Stonecutter.zip' -Force">nul 2>&1
