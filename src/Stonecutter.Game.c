@@ -20,7 +20,7 @@
 #include <initguid.h>
 #include <windows.ui.core.h>
 #include <d3d11.h>
-#include <dxgi1_3.h>
+#include <dxgi1_2.h>
 #include <d3d12.h>
 #include <MinHook.h>
 
@@ -101,7 +101,7 @@ DWORD ThreadProc(LPVOID lpParameter)
     MH_Initialize();
 
     IDXGIFactory2 *pFactory = NULL;
-    CreateDXGIFactory2(0, &IID_IDXGIFactory2, (void **)&pFactory);
+    CreateDXGIFactory(&IID_IDXGIFactory2, (void **)&pFactory);
     MH_CreateHook((*(LPVOID **)pFactory)[16], &CreateSwapChainForCoreWindow, (LPVOID *)&_CreateSwapChainForCoreWindow);
     pFactory->lpVtbl->Release(pFactory);
 
