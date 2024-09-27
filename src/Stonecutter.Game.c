@@ -1,22 +1,3 @@
-#define WIN32_LEAN_AND_MEAN
-#define NOATOM
-#define NOGDI
-#define NOGDICAPMASKS
-#define NOMETAFILE
-#define NOMINMAX
-#define NOOPENFILE
-#define NORASTEROPS
-#define NOSCROLL
-#define NOSOUND
-#define NOSYSMETRICS
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOCRYPT
-#define NOMCX
-#define NOIME
-
 #include <initguid.h>
 #include <windows.ui.core.h>
 #include <d3d11.h>

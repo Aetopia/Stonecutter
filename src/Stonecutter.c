@@ -16,6 +16,7 @@
 #define NOCRYPT
 #define NOMCX
 #define NOIME
+#define INC_OLE1
 #define _MINAPPMODEL_H_
 
 #include <initguid.h>
