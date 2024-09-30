@@ -217,7 +217,7 @@ HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI
 ## Features
 
 <details><summary>RenderDragon DirectX 11</summary><br>
-Forces Minecraft: Bedrock Edition to use DirectX 11 instead of auto-selecting the graphics API.
+Forces Minecraft: Bedrock Edition to use DirectX 11 instead of auto-selecting the graphics API.<br>
 
 To implement this feature, the following code runs under `IDXGIFactory2::CreateSwapChainForCoreWindow`.
 
