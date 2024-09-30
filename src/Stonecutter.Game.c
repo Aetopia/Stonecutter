@@ -1,7 +1,6 @@
 #include <initguid.h>
 #include <windows.ui.core.h>
 #include <d3d11.h>
-#include <d3d12.h>
 #include <dxgi1_2.h>
 #include <MinHook.h>
 
@@ -51,11 +50,13 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
         MH_EnableHook(MH_ALL_HOOKS);
     }
 
-    ID3D12CommandQueue *pCommandQueue = NULL;
-    if (fD3D11 && !pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D12CommandQueue, (void **)&pCommandQueue))
+    if (fD3D11)
     {
-        pCommandQueue->lpVtbl->Release(pCommandQueue);
-        return DXGI_ERROR_INVALID_CALL;
+        ID3D11Device *_ = NULL;
+        if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (void **)&_))
+            return DXGI_ERROR_INVALID_CALL;
+        else
+            _->lpVtbl->Release(_);
     }
 
     pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
