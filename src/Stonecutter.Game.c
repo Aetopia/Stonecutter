@@ -55,8 +55,7 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
         ID3D11Device *_ = NULL;
         if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (void **)&_))
             return DXGI_ERROR_INVALID_CALL;
-        else
-            _->lpVtbl->Release(_);
+        _->lpVtbl->Release(_);
     }
 
     pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
