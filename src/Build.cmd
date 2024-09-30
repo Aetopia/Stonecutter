@@ -6,7 +6,7 @@ mkdir "bin">nul 2>&1
 
 echo Compiling "Stonecutter.Game.dll"...
 windres.exe -i "Resources\Stonecutter.Game.rc" -o "%TEMP%\.o"
-gcc.exe -Os -Wl,--gc-sections -shared -nostdlib -static -s "Stonecutter.Game.c" "%TEMP%\.o" -lMinHook -lKernel32 -lucrt -lUser32 -lDXGI -lD3D11 -o "bin\Stonecutter.Game.dll"
+gcc.exe -Os -Wl,--gc-sections -shared -nostdlib -static -s "Stonecutter.Game.c" "%TEMP%\.o" -lMinHook -lKernel32 -lucrtbase -lUser32 -lDXGI -lD3D11 -o "bin\Stonecutter.Game.dll"
 
 echo Compiling "Stonecutter.Display.exe"...
 windres.exe -i "Resources\Stonecutter.Display.rc" -o "%TEMP%\.o"
