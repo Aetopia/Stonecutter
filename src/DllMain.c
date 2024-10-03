@@ -3,7 +3,7 @@
 #include <d3d11_1.h>
 #include <MinHook.h>
 
-BOOL fD3D11 = FALSE, fEnabled = FALSE;
+BOOL fPresent = FALSE, fForce = FALSE;
 
 HRESULT(*_put_PointerCursor)
 (__x_ABI_CWindows_CUI_CCore_CICoreWindow *, __x_ABI_CWindows_CUI_CCore_CICoreCursor *) = NULL;
@@ -42,14 +42,14 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
                                      __x_ABI_CWindows_CUI_CCore_CICoreWindow *pWindow, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                      IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain)
 {
-    if (!fEnabled)
+    if (!fPresent)
     {
-        fEnabled = TRUE;
+        fPresent = TRUE;
         MH_CreateHook((*(LPVOID **)pWindow)[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
         MH_EnableHook(MH_ALL_HOOKS);
     }
 
-    if (fD3D11)
+    if (fForce)
     {
         ID3D11Device *_ = NULL;
         if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (void **)&_))
@@ -63,7 +63,7 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
 
 HRESULT Present(IDXGISwapChain *This, UINT SyncInterval, UINT Flags)
 {
-    return fEnabled ? _Present(This, 0, DXGI_PRESENT_ALLOW_TEARING) : DXGI_ERROR_DEVICE_RESET;
+    return fPresent ? _Present(This, 0, DXGI_PRESENT_ALLOW_TEARING) : DXGI_ERROR_DEVICE_RESET;
 }
 
 HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
@@ -76,7 +76,7 @@ DWORD ThreadProc(LPVOID lpParameter)
 {
     WCHAR szFileName[MAX_PATH] = {};
     ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
-    fD3D11 = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
+     fForce = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
 
     MH_Initialize();
 
