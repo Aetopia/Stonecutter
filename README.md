@@ -188,30 +188,6 @@ Stonecutter implements this fix as follows:
 
   - Center the cursor using `__x_ABI_CWindows_CUI_CCore_CICoreWindow2->put_PointerPosition`.
 
-```c
-HRESULT put_PointerCursor(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This, __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
-{
-    __x_ABI_CWindows_CUI_CCore_CICoreCursor *pCursor = NULL;
-    This->lpVtbl->get_PointerCursor(This, &pCursor);
-
-    if (!pCursor)
-    {
-        __x_ABI_CWindows_CFoundation_CRect _ = {};
-        This->lpVtbl->get_Bounds(This, &_);
-
-        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pWindow = NULL;
-        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (void **)&pWindow);
-        pWindow->lpVtbl->put_PointerPosition(
-            pWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + _.Width / 2, _.Y + _.Height / 2});
-        pWindow->lpVtbl->Release(pWindow);
-    }
-    else
-        pCursor->lpVtbl->Release(pCursor);
-
-    return _put_PointerCursor(This, value);
-}
-```
-
 </details>
 
 ## Usage
