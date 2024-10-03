@@ -18,7 +18,7 @@ VOID WinMainCRTStartup()
         }
 
     PACL OldAcl = NULL;
-    GetNamedSecurityInfoW(lstrcatW(szLibFileName, L"Stonecutter.Game.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
+    GetNamedSecurityInfoW(lstrcatW(szLibFileName, L"Stonecutter.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
                           NULL, NULL, &OldAcl, NULL, NULL);
 
     PSID Sid = NULL;
