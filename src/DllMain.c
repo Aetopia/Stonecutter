@@ -75,8 +75,8 @@ HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT H
 DWORD ThreadProc(LPVOID lpParameter)
 {
     WCHAR szFileName[MAX_PATH] = {};
-    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter\\Game.ini", szFileName, MAX_PATH);
-    fD3D11 = GetPrivateProfileIntW(L"Settings", L"D3D11", FALSE, szFileName) == TRUE;
+    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
+    fD3D11 = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
 
     MH_Initialize();
 
@@ -101,18 +101,17 @@ DWORD ThreadProc(LPVOID lpParameter)
     return MH_EnableHook(MH_ALL_HOOKS);
 }
 
-BOOL DllMainCRTStartup(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
+BOOL DllMainCRTStartup(HINSTANCE hLibModule, DWORD dwReason, LPVOID lpReserved)
 {
-    if (fdwReason == DLL_PROCESS_ATTACH)
+    if (dwReason == DLL_PROCESS_ATTACH)
     {
-        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter.Game");
+        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
         if (GetLastError())
         {
             CloseHandle(hMutex);
             return FALSE;
         }
-
-        DisableThreadLibraryCalls(hinstDLL);
+        DisableThreadLibraryCalls(hLibModule);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));
     }
     return TRUE;
