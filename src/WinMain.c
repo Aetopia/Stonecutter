@@ -1,4 +1,4 @@
-#define _MINAPPMODEL_H_
+#define _MINAPPMODEL_H_ 
 #include <initguid.h>
 #include <shobjidl.h>
 #include <appmodel.h>
