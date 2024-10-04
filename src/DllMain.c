@@ -1,9 +1,9 @@
 #define _MINAPPMODEL_H_
 #include <initguid.h>
-#include <windows.ui.core.h>
+#include <MinHook.h>
 #include <d3d11_1.h>
 #include <appmodel.h>
-#include <MinHook.h>
+#include <windows.ui.core.h>
 
 BOOL fPresent = FALSE, fForce = FALSE;
 
