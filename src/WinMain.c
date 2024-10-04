@@ -65,9 +65,8 @@ VOID WinMainCRTStartup()
         CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL);
     WaitForSingleObject(hThread, INFINITE);
     VirtualFreeEx(hProcess, lpBaseAddress, 0, MEM_RELEASE);
-    
+
     CloseHandle(hThread);
     CloseHandle(hProcess);
-
     ExitProcess(0);
 }
