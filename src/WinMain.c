@@ -42,7 +42,7 @@ VOID WinMainCRTStartup()
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (LPVOID *)&pPackageDebugSettings);
 
-    WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
+    WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
     GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){1}), (PWSTR[]){},
                                &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
     pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, szPackageFullName, NULL, NULL);
