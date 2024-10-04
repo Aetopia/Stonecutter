@@ -1,6 +1,5 @@
 @echo off
-
-cd "%~dp0"
+cd "%~dp0">nul 2>&1
 rmdir /Q /S "bin">nul 2>&1
 mkdir "bin">nul 2>&1
 
