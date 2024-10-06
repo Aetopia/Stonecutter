@@ -7,6 +7,10 @@
 
 VOID WinMainCRTStartup()
 {
+    HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
+    if (GetLastError())
+        goto _;
+
     WCHAR szLibFileName[MAX_PATH] = {};
     QueryFullProcessImageNameW(GetCurrentProcess(), 0, szLibFileName, &((DWORD){MAX_PATH}));
     for (DWORD _ = lstrlenW(szLibFileName); _ < -1; _--)
@@ -45,15 +49,17 @@ VOID WinMainCRTStartup()
     GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){1}), (PWSTR[]){},
                                &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
     pPackageDebugSettings->lpVtbl->EnableDebugging(pPackageDebugSettings, szPackageFullName, NULL, NULL);
+    pPackageDebugSettings->lpVtbl->Release(pPackageDebugSettings);
 
     IApplicationActivationManager *pApplicationActivationManager = NULL;
-    CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
-                     &IID_IApplicationActivationManager, (LPVOID *)&pApplicationActivationManager);
+    CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_LOCAL_SERVER, &IID_IApplicationActivationManager,
+                     (LPVOID *)&pApplicationActivationManager);
     CoAllowSetForegroundWindow((IUnknown *)pApplicationActivationManager, NULL);
 
     DWORD dwProcessId = 0;
     pApplicationActivationManager->lpVtbl->ActivateApplication(
         pApplicationActivationManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI, &dwProcessId);
+    pApplicationActivationManager->lpVtbl->Release(pApplicationActivationManager);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress =
@@ -64,8 +70,10 @@ VOID WinMainCRTStartup()
         CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL);
     WaitForSingleObject(hThread, INFINITE);
     VirtualFreeEx(hProcess, lpBaseAddress, 0, MEM_RELEASE);
-    
+_:
     CloseHandle(hThread);
     CloseHandle(hProcess);
+    CloseHandle(hMutex) ;
+    CoUninitialize();
     ExitProcess(0);
 }
