@@ -1,9 +1,9 @@
 #define _MINAPPMODEL_H_
 #include <initguid.h>
-#include <shobjidl.h>
-#include <appmodel.h>
 #include <aclapi.h>
 #include <sddl.h>
+#include <shobjidl.h>
+#include <appmodel.h>
 
 VOID WinMainCRTStartup()
 {
@@ -73,7 +73,7 @@ VOID WinMainCRTStartup()
 _:
     CloseHandle(hThread);
     CloseHandle(hProcess);
-    CloseHandle(hMutex) ;
+    CloseHandle(hMutex);
     CoUninitialize();
     ExitProcess(0);
 }
