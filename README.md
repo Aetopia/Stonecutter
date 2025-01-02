@@ -29,7 +29,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 
         - Run Stonecutter from the Windows Start Menu.
 
-- Once selected, Stonecutter will launch and patch the game.
+- Stonecutter will launch and patch Minecraft: Bedrock Edition.
 
 ## FAQ
 
