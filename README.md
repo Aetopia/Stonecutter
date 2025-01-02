@@ -33,38 +33,36 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 
 ## FAQ
 
-- How can I disable V-Sync?
+#### How can I disable V-Sync?
 
-  - Open the following file:
-    
-    ```
-    %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftpe\options.txt
-    ```
+- Open the following file:
+  ```
+  %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftpe\options.txt
+  ```
 
-  - Set `gfx_vsync` to `0`.
+- Set `gfx_vsync` to `0`.
 
-  - Save the file.
+- Save the file.
 
-  - Launch Minecraft: Bedrock Edition via Stonecutter.
+- Launch Minecraft: Bedrock Edition via Stonecutter.
 
-- How can I force DirectX 11?
+#### How can I force DirectX 11?
 
-    - Create the following file:
+- Create the following file:
         
-        ```
-        %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState\DirectX.ini
-        ```
-
-    - Add the following contents:
+  ```
+  %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState\DirectX.ini
+  ```
+- Add the following contents:
       
-      ```ini
-      []
-      =1
-      ```
+  ```ini
+  []
+  =1
+  ```
 
-    - Save the file.
+- Save the file.
 
-    - Launch Minecraft: Bedrock Edition via Stonecutter.
+- Launch Minecraft: Bedrock Edition via Stonecutter.
 
 ## Building
 1. Install [MSYS2](https://www.msys2.org/) & [UPX](https://upx.github.io/) for optional compression.
