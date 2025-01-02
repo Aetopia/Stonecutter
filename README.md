@@ -51,7 +51,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 - Create the following file:
         
   ```
-  %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState\DirectX.ini
+  %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\RoamingState\Stonecutter.ini
   ```
 - Add the following contents:
       

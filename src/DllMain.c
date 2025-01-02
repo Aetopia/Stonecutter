@@ -78,7 +78,7 @@ HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT H
 DWORD ThreadProc(LPVOID lpParameter)
 {
     WCHAR szFileName[MAX_PATH] = {};
-    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\DirectX.ini", szFileName, MAX_PATH);
+    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
     fForce = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
 
     MH_Initialize();
