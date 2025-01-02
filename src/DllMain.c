@@ -65,7 +65,8 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
 
 HRESULT Present(IDXGISwapChain *This, UINT SyncInterval, UINT Flags)
 {
-    return fPresent ? _Present(This, 0, DXGI_PRESENT_ALLOW_TEARING) : DXGI_ERROR_DEVICE_RESET;
+    return fPresent ? _Present(This, SyncInterval, SyncInterval ? Flags : DXGI_PRESENT_ALLOW_TEARING)
+                    : DXGI_ERROR_DEVICE_RESET;
 }
 
 HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
@@ -77,7 +78,7 @@ HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT H
 DWORD ThreadProc(LPVOID lpParameter)
 {
     WCHAR szFileName[MAX_PATH] = {};
-    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
+    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\DirectX.ini", szFileName, MAX_PATH);
     fForce = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
 
     MH_Initialize();
