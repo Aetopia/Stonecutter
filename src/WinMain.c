@@ -55,7 +55,7 @@ VOID WinMainCRTStartup()
     IApplicationActivationManager *pApplicationActivationManager = NULL;
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_LOCAL_SERVER, &IID_IApplicationActivationManager,
                      (LPVOID *)&pApplicationActivationManager);
-    CoAllowSetForegroundWindow((IUnknown *)pApplicationActivationManager, NULL);
+    CoAllowSetForegroundWindow((LPUNKNOWN)pApplicationActivationManager, NULL);
 
     DWORD dwProcessId = 0;
     pApplicationActivationManager->lpVtbl->ActivateApplication(
