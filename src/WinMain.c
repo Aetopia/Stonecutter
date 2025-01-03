@@ -36,6 +36,7 @@ VOID WinMainCRTStartup()
             .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
             .Trustee = {.TrusteeForm = TRUSTEE_IS_SID, .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP, .ptstrName = Sid}}),
         OldAcl, &NewAcl);
+    LocalFree(Sid);
 
     SetNamedSecurityInfoW(szLibFileName, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, NewAcl, NULL);
 
