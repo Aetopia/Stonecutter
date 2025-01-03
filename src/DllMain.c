@@ -104,7 +104,7 @@ DWORD ThreadProc(LPVOID lpParameter)
     return MH_EnableHook(MH_ALL_HOOKS);
 }
 
-BOOL DllMainCRTStartup(HINSTANCE hLibModule, DWORD dwReason, LPVOID lpReserved)
+BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
@@ -122,7 +122,7 @@ BOOL DllMainCRTStartup(HINSTANCE hLibModule, DWORD dwReason, LPVOID lpReserved)
             return FALSE;
         }
 
-        DisableThreadLibraryCalls(hLibModule);
+        DisableThreadLibraryCalls(hInstance);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));
     }
     return TRUE;
