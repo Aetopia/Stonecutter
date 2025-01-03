@@ -62,6 +62,8 @@ VOID WinMainCRTStartup()
         pApplicationActivationManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI, &dwProcessId);
     pApplicationActivationManager->lpVtbl->Release(pApplicationActivationManager);
 
+    CoUninitialize();
+
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress =
         VirtualAllocEx(hProcess, NULL, sizeof(szLibFileName), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
@@ -71,10 +73,10 @@ VOID WinMainCRTStartup()
         CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL);
     WaitForSingleObject(hThread, INFINITE);
     VirtualFreeEx(hProcess, lpBaseAddress, 0, MEM_RELEASE);
-_:
+
     CloseHandle(hThread);
     CloseHandle(hProcess);
+_:
     CloseHandle(hMutex);
-    CoUninitialize();
-    ExitProcess(0);
+    ExitProcess(EXIT_SUCCESS);
 }
