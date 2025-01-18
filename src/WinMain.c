@@ -6,12 +6,8 @@
 
 VOID WinMainCRTStartup()
 {
-    HANDLE _ = CreateMutexW(NULL, FALSE, L"Stonecutter");
-    if (GetLastError())
-    {
-        CloseHandle(_);
+    if (CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError())
         ExitProcess(EXIT_SUCCESS);
-    }
 
     WCHAR szLibFileName[MAX_PATH] = {};
     QueryFullProcessImageNameW(GetCurrentProcess(), 0, szLibFileName, &((DWORD){MAX_PATH}));
@@ -69,6 +65,5 @@ VOID WinMainCRTStartup()
     CloseHandle(hThread);
     CloseHandle(hProcess);
 
-    CloseHandle(_);
     ExitProcess(EXIT_SUCCESS);
 }
