@@ -48,7 +48,7 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
     if (_)
     {
         ID3D11Device *_ = NULL;
-        if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (LPVOID*)&_))
+        if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (LPVOID *)&_))
             return DXGI_ERROR_INVALID_CALL;
         _->lpVtbl->Release(_);
     }
@@ -70,12 +70,6 @@ HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT H
 
 DWORD ThreadProc(LPVOID lpParameter)
 {
-    WCHAR szFileName[MAX_PATH] = {};
-    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
-    _ = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
-
-    MH_Initialize();
-
     IDXGIFactory2 *pFactory = NULL;
     CreateDXGIFactory(&IID_IDXGIFactory2, (void **)&pFactory);
     MH_CreateHook((*(LPVOID **)pFactory)[16], &CreateSwapChainForCoreWindow, (LPVOID *)&_CreateSwapChainForCoreWindow);
@@ -101,6 +95,11 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
+        WCHAR szFileName[MAX_PATH] = {};
+        ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
+        _ = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
+        
+        MH_Initialize();
         DisableThreadLibraryCalls(hInstance);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));
     }
