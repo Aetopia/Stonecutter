@@ -6,6 +6,13 @@
 
 VOID WinMainCRTStartup()
 {
+    HANDLE _ = CreateMutexW(NULL, FALSE, L"Stonecutter");
+    if (GetLastError())
+    {
+        CloseHandle(_);
+        ExitProcess(EXIT_SUCCESS);
+    }
+
     CoInitialize(NULL);
 
     IPackageDebugSettings *pSettings = {};
@@ -61,5 +68,6 @@ VOID WinMainCRTStartup()
     CloseHandle(hThread);
     CloseHandle(hProcess);
 
+    CloseHandle(_);
     ExitProcess(EXIT_SUCCESS);
 }
