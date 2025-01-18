@@ -48,7 +48,7 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
     if (_)
     {
         ID3D11Device *_ = NULL;
-        if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (void **)&_))
+        if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (LPVOID*)&_))
             return DXGI_ERROR_INVALID_CALL;
         _->lpVtbl->Release(_);
     }
