@@ -13,28 +13,6 @@ VOID WinMainCRTStartup()
         ExitProcess(EXIT_SUCCESS);
     }
 
-    CoInitialize(NULL);
-
-    IPackageDebugSettings *pSettings = {};
-    CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
-                     (LPVOID *)&pSettings);
-
-    IApplicationActivationManager *pManager = {};
-    CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
-                     &IID_IApplicationActivationManager, (LPVOID *)&pManager);
-
-    WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
-    GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){1}), (PWSTR[]){},
-                               &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
-
-    pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
-    pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
-    pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
-
-    DWORD dwProcessId = {};
-    pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI,
-                                          &dwProcessId);
-
     WCHAR szLibFileName[MAX_PATH] = {};
     QueryFullProcessImageNameW(GetCurrentProcess(), 0, szLibFileName, &((DWORD){MAX_PATH}));
     for (DWORD _ = lstrlenW(szLibFileName); _ < -1; _--)
@@ -56,6 +34,28 @@ VOID WinMainCRTStartup()
                                                       .ptstrName = L"ALL APPLICATION PACKAGES"}}),
                      pAcl, &pAcl);
     SetNamedSecurityInfoW(szLibFileName, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
+
+    CoInitialize(NULL);
+
+    IPackageDebugSettings *pSettings = {};
+    CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
+                     (LPVOID *)&pSettings);
+
+    WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
+    GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){1}), (PWSTR[]){},
+                               &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
+
+    pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
+    pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
+    pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
+
+    IApplicationActivationManager *pManager = {};
+    CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
+                     &IID_IApplicationActivationManager, (LPVOID *)&pManager);
+
+    DWORD dwProcessId = {};
+    pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI,
+                                          &dwProcessId);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress =
