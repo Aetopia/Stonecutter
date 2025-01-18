@@ -27,10 +27,11 @@ VOID WinMainCRTStartup()
     GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){1}), (PWSTR[]){},
                                &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
 
-    DWORD dwProcessId = {};
     pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
     pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
+
+    DWORD dwProcessId = {};
     pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI,
                                           &dwProcessId);
 
