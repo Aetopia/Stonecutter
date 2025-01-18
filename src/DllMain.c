@@ -1,11 +1,9 @@
-#define _MINAPPMODEL_H_
 #include <initguid.h>
 #include <MinHook.h>
 #include <d3d11_1.h>
-#include <appmodel.h>
 #include <windows.ui.core.h>
 
-BOOL fPresent = FALSE, fForce = FALSE;
+BOOL _ = {};
 
 HRESULT(*_put_PointerCursor)
 (__x_ABI_CWindows_CUI_CCore_CICoreWindow *, __x_ABI_CWindows_CUI_CCore_CICoreCursor *) = NULL;
@@ -44,14 +42,10 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
                                      __x_ABI_CWindows_CUI_CCore_CICoreWindow *pWindow, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                      IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain)
 {
-    if (!fPresent)
-    {
-        fPresent = TRUE;
-        MH_CreateHook((*(LPVOID **)pWindow)[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor);
+    if (!MH_CreateHook((*(LPVOID **)pWindow)[15], &put_PointerCursor, (LPVOID *)&_put_PointerCursor))
         MH_EnableHook(MH_ALL_HOOKS);
-    }
 
-    if (fForce)
+    if (_)
     {
         ID3D11Device *_ = NULL;
         if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (void **)&_))
@@ -65,8 +59,7 @@ HRESULT CreateSwapChainForCoreWindow(IDXGIFactory2 *This, IUnknown *pDevice,
 
 HRESULT Present(IDXGISwapChain *This, UINT SyncInterval, UINT Flags)
 {
-    return fPresent ? _Present(This, SyncInterval, SyncInterval ? Flags : DXGI_PRESENT_ALLOW_TEARING)
-                    : DXGI_ERROR_DEVICE_RESET;
+    return _Present(This, SyncInterval, SyncInterval ? Flags : DXGI_PRESENT_ALLOW_TEARING);
 }
 
 HRESULT ResizeBuffers(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
@@ -79,7 +72,7 @@ DWORD ThreadProc(LPVOID lpParameter)
 {
     WCHAR szFileName[MAX_PATH] = {};
     ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
-    fForce = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
+    _ = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
 
     MH_Initialize();
 
@@ -108,20 +101,6 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
-        WCHAR szPackageFamilyName[PACKAGE_FAMILY_NAME_MAX_LENGTH + 1] = {};
-        if (GetCurrentPackageFamilyName(&((UINT32){PACKAGE_FAMILY_NAME_MAX_LENGTH}), szPackageFamilyName) ==
-                APPMODEL_ERROR_NO_PACKAGE ||
-            CompareStringOrdinal(szPackageFamilyName, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) !=
-                CSTR_EQUAL)
-            return FALSE;
-
-        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
-        if (GetLastError())
-        {
-            CloseHandle(hMutex);
-            return FALSE;
-        }
-
         DisableThreadLibraryCalls(hInstance);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));
     }
