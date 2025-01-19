@@ -98,10 +98,13 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
     if (dwReason == DLL_PROCESS_ATTACH)
     {
         WCHAR szPackageFamilyName[PACKAGE_FAMILY_NAME_MAX_LENGTH] = {};
-        if (GetCurrentPackageFamilyName(&((UINT32){PACKAGE_FAMILY_NAME_MAX_LENGTH}), szPackageFamilyName) ||
-            CompareStringOrdinal(szPackageFamilyName, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) !=
-                CSTR_EQUAL ||
-            (CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError()))
+        GetCurrentPackageFamilyName(&((UINT32){PACKAGE_FAMILY_NAME_MAX_LENGTH}), szPackageFamilyName);
+        if (CompareStringOrdinal(szPackageFamilyName, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) !=
+            CSTR_EQUAL)
+            return FALSE;
+
+        CreateMutexW(NULL, FALSE, L"Stonecutter");
+        if (GetLastError())
             return FALSE;
 
         WCHAR szFileName[MAX_PATH] = {};
