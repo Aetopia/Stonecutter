@@ -53,8 +53,11 @@ VOID WinMainCRTStartup()
     GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szName, &((ULONG){MAX_PATH}));
 
     HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
-    if (!GetLastError())
+    if (!hMutex || !GetLastError())
+    {
+        pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
         pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
+    }
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
     CloseHandle(hMutex);
 

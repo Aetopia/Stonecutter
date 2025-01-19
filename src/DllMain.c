@@ -104,7 +104,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
             return FALSE;
 
         HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
-        if (GetLastError())
+        if (!hMutex || GetLastError())
         {
             CloseHandle(hMutex);
             return FALSE;
