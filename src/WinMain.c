@@ -7,8 +7,12 @@
 
 VOID WinMainCRTStartup()
 {
-    if (CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError())
+    HANDLE hObject = CreateMutexW(NULL, FALSE, L"Stonecutter");
+    if (GetLastError())
+    {
+        CloseHandle(hObject);
         ExitProcess(EXIT_SUCCESS);
+    }
 
     WCHAR szLibFileName[MAX_PATH] = {};
     QueryFullProcessImageNameW(GetCurrentProcess(), 0, szLibFileName, &((DWORD){MAX_PATH}));
@@ -51,11 +55,11 @@ VOID WinMainCRTStartup()
     HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
     if (!GetLastError())
     {
-        CloseHandle(hMutex);
         pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
         pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
     }
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
+    CloseHandle(hMutex);
 
     IApplicationActivationManager *pManager = {};
     CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
@@ -77,5 +81,6 @@ VOID WinMainCRTStartup()
     CloseHandle(hThread);
     CloseHandle(hProcess);
 
+    CloseHandle(hObject);
     ExitProcess(EXIT_SUCCESS);
 }
