@@ -34,25 +34,24 @@ VOID WinMainCRTStartup()
 
     CoInitialize(NULL);
 
-    WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
-    GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){PACKAGE_GRAPH_MIN_SIZE}), (PWSTR[]){},
-                               &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
-
-    WCHAR szName[MAX_PATH] = {};
-    PSID pSid = {};
-    DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
-    GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szName, &((ULONG){MAX_PATH}));
-
-    HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
-    BOOL _ = hMutex && !GetLastError();
-    CloseHandle(hMutex);
-
     IPackageDebugSettings *pSettings = {};
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (LPVOID *)&pSettings);
 
-    if (_)
+    WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
+    GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){PACKAGE_GRAPH_MIN_SIZE}), (PWSTR[]){},
+                               &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
+
+    PSID pSid = {};
+    DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
+
+    WCHAR szName[MAX_PATH] = {};
+    GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szName, &((ULONG){MAX_PATH}));
+
+    HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
+    if (!GetLastError())
     {
+        CloseHandle(hMutex);
         pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
         pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
     }
@@ -65,9 +64,6 @@ VOID WinMainCRTStartup()
     DWORD dwProcessId = {};
     pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI,
                                           &dwProcessId);
-
-    if (!_)
-        ExitProcess(EXIT_SUCCESS);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress =
