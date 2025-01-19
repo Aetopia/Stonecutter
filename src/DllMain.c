@@ -1,6 +1,8 @@
+#define _MINAPPMODEL_H_
 #include <initguid.h>
 #include <MinHook.h>
 #include <d3d11_1.h>
+#include <appmodel.h>
 #include <windows.ui.core.h>
 
 BOOL _ = {};
@@ -95,10 +97,17 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
+        WCHAR szPackageFamilyName[PACKAGE_FAMILY_NAME_MAX_LENGTH] = {};
+        if (GetCurrentPackageFamilyName(&((UINT32){PACKAGE_FAMILY_NAME_MAX_LENGTH}), szPackageFamilyName) ||
+            CompareStringOrdinal(szPackageFamilyName, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) !=
+                CSTR_EQUAL ||
+            (CreateMutexW(NULL, FALSE, L"Stonecutter") && GetLastError()))
+            return FALSE;
+
         WCHAR szFileName[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
         _ = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
-        
+
         MH_Initialize();
         DisableThreadLibraryCalls(hInstance);
         CloseHandle(CreateThread(NULL, 0, ThreadProc, NULL, 0, NULL));

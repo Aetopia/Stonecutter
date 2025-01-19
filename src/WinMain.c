@@ -3,6 +3,7 @@
 #include <aclapi.h>
 #include <shobjidl.h>
 #include <appmodel.h>
+#include <userenv.h>
 
 VOID WinMainCRTStartup()
 {
@@ -21,7 +22,7 @@ VOID WinMainCRTStartup()
     PACL pAcl = {};
     GetNamedSecurityInfoW(lstrcatW(szLibFileName, L"Stonecutter.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL,
                           NULL, &pAcl, NULL, NULL);
-    SetEntriesInAclW(1,
+    SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
                      &((EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE,
                                           .grfAccessMode = SET_ACCESS,
                                           .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
@@ -33,16 +34,28 @@ VOID WinMainCRTStartup()
 
     CoInitialize(NULL);
 
+    WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
+    GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){PACKAGE_GRAPH_MIN_SIZE}), (PWSTR[]){},
+                               &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
+
+    WCHAR szName[MAX_PATH] = {};
+    PSID pSid = {};
+    DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
+    GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szName, &((ULONG){MAX_PATH}));
+
+    HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
+    BOOL _ = hMutex && !GetLastError();
+    CloseHandle(hMutex);
+
     IPackageDebugSettings *pSettings = {};
     CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (LPVOID *)&pSettings);
 
-    WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
-    GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){1}), (PWSTR[]){},
-                               &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
-
-    pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
-    pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
+    if (_)
+    {
+        pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
+        pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
+    }
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
 
     IApplicationActivationManager *pManager = {};
@@ -52,6 +65,9 @@ VOID WinMainCRTStartup()
     DWORD dwProcessId = {};
     pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI,
                                           &dwProcessId);
+
+    if (!_)
+        ExitProcess(EXIT_SUCCESS);
 
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
     LPVOID lpBaseAddress =
