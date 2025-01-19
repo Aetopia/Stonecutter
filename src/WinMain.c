@@ -54,10 +54,7 @@ VOID WinMainCRTStartup()
 
     HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
     if (!GetLastError())
-    {
-        pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
         pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
-    }
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
     CloseHandle(hMutex);
 
