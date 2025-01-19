@@ -8,7 +8,7 @@
 VOID WinMainCRTStartup()
 {
     HANDLE hObject = CreateMutexW(NULL, FALSE, L"Stonecutter");
-    if (GetLastError())
+    if (!hObject || GetLastError())
     {
         CloseHandle(hObject);
         ExitProcess(EXIT_SUCCESS);
