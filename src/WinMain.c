@@ -53,8 +53,8 @@ VOID WinMainCRTStartup()
 
     if (_)
     {
-        pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
         pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
+        pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
     }
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
 
