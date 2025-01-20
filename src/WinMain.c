@@ -15,7 +15,7 @@ VOID WinMainCRTStartup()
     }
 
     WCHAR szLibFileName[MAX_PATH] = {};
-    QueryFullProcessImageNameW(GetCurrentProcess(), 0, szLibFileName, &((DWORD){MAX_PATH}));
+    QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szLibFileName, &((DWORD){MAX_PATH}));
     for (DWORD _ = lstrlenW(szLibFileName); _ < -1; _--)
         if (szLibFileName[_] == '\\')
         {
