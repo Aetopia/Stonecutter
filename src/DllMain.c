@@ -135,6 +135,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
         _ = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
 
         MH_Initialize();
+        
         MH_CreateHook(CreateWindowExW, &_CreateWindowExW_, (LPVOID)&__CreateWindowExW__);
         MH_EnableHook(CreateWindowExW);
 
