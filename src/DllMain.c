@@ -78,6 +78,8 @@ HWND _CreateWindowExW_(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowNam
                        INT nWidth, INT nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
     MH_DisableHook(CreateWindowExW);
+    HWND hWnd = __CreateWindowExW__(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent,
+                                    hMenu, hInstance, lpParam);
 
     IDXGIFactory2 *pFactory = {};
     CreateDXGIFactory(&IID_IDXGIFactory2, (void **)&pFactory);
@@ -96,7 +98,7 @@ HWND _CreateWindowExW_(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowNam
                                  .BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM,
                                  .SampleDesc.Count = D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT,
                                  .Windowed = TRUE,
-                                 .OutputWindow = GetDesktopWindow()}),
+                                 .OutputWindow = hWnd}),
         &pSwapChain, NULL, NULL, NULL);
 
     lpVtbl = *(LPVOID **)pSwapChain;
@@ -109,8 +111,7 @@ HWND _CreateWindowExW_(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowNam
 
     pSwapChain->lpVtbl->Release(pSwapChain);
 
-    return __CreateWindowExW__(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu,
-                               hInstance, lpParam);
+    return hWnd;
 }
 
 BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
