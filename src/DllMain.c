@@ -58,10 +58,6 @@ HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, IUnknown *pDevice,
                                        __x_ABI_CWindows_CUI_CCore_CICoreWindow *pWindow, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                        IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain)
 {
-    LPVOID pTarget = (*(LPVOID **)pWindow)[15];
-    if (!MH_CreateHook(pTarget, &_put_PointerCursor_, (LPVOID *)&__put_PointerCursor__))
-        MH_EnableHook(pTarget);
-
     if (_)
     {
         ID3D11Device *_ = NULL;
@@ -69,6 +65,10 @@ HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, IUnknown *pDevice,
             return DXGI_ERROR_INVALID_CALL;
         _->lpVtbl->Release(_);
     }
+
+    LPVOID pTarget = (*(LPVOID **)pWindow)[15];
+    if (!MH_CreateHook(pTarget, &_put_PointerCursor_, (LPVOID *)&__put_PointerCursor__))
+        MH_EnableHook(pTarget);
 
     pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     return __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
