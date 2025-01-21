@@ -77,17 +77,17 @@ HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, IUnknown *pDevice,
 HWND _CreateWindowExW_(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowName, DWORD dwStyle, INT X, INT Y,
                        INT nWidth, INT nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
-    MH_DisableHook(CreateWindowExW);
+    MH_QueueDisableHook(CreateWindowExW);
     HWND hWnd = __CreateWindowExW__(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent,
                                     hMenu, hInstance, lpParam);
 
     IDXGIFactory2 *pFactory = {};
-    CreateDXGIFactory(&IID_IDXGIFactory2, (void **)&pFactory);
+    CreateDXGIFactory(&IID_IDXGIFactory2, (LPVOID *)&pFactory);
 
-    LPVOID *lpVtbl = (*(LPVOID **)pFactory);
+    LPVOID *lpVtbl = (*(LPVOID **)pFactory), pTarget = lpVtbl[16];
 
-    MH_CreateHook(lpVtbl[16], &_CreateSwapChainForCoreWindow_, (LPVOID *)&__CreateSwapChainForCoreWindow__);
-    MH_EnableHook(lpVtbl[16]);
+    MH_CreateHook(pTarget, &_CreateSwapChainForCoreWindow_, (LPVOID *)&__CreateSwapChainForCoreWindow__);
+    MH_QueueEnableHook(pTarget);
 
     pFactory->lpVtbl->Release(pFactory);
 
@@ -103,14 +103,15 @@ HWND _CreateWindowExW_(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowNam
 
     lpVtbl = *(LPVOID **)pSwapChain;
 
-    MH_CreateHook(lpVtbl[8], &_Present_, (LPVOID *)&__Present__);
-    MH_EnableHook(lpVtbl[8]);
+    MH_CreateHook(pTarget = lpVtbl[8], &_Present_, (LPVOID *)&__Present__);
+    MH_QueueEnableHook(pTarget);
 
-    MH_CreateHook(lpVtbl[13], &_ResizeBuffers_, (LPVOID *)&__ResizeBuffers__);
-    MH_EnableHook(lpVtbl[13]);
+    MH_CreateHook(pTarget = lpVtbl[13], &_ResizeBuffers_, (LPVOID *)&__ResizeBuffers__);
+    MH_QueueEnableHook(pTarget);
 
     pSwapChain->lpVtbl->Release(pSwapChain);
 
+    MH_ApplyQueued();
     return hWnd;
 }
 
