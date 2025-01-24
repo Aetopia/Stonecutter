@@ -18,7 +18,7 @@ HRESULT(*__CreateSwapChainForCoreWindow__)
 (IDXGIFactory2 *, IUnknown *, __x_ABI_CWindows_CUI_CCore_CICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, IDXGIOutput *,
  IDXGISwapChain1 **) = {};
 
-HWND (*__CreateWindowExW__)(DWORD, LPCWSTR, LPCWSTR, DWORD, INT, INT, INT, INT, HWND, HMENU, HINSTANCE, LPVOID) = {};
+HWND (*__RegisterClassExW__)(LPWNDCLASSEXW) = {};
 
 HRESULT _ResizeBuffers_(IDXGISwapChain *This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
                         UINT SwapChainFlags)
@@ -74,12 +74,10 @@ HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, IUnknown *pDevice,
     return __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 }
 
-HWND _CreateWindowExW_(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowName, DWORD dwStyle, INT X, INT Y,
-                       INT nWidth, INT nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
+HWND _RegisterClassExW_(LPWNDCLASSEXW _)
 {
-    MH_QueueDisableHook(CreateWindowExW);
-    HWND hWnd = __CreateWindowExW__(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent,
-                                    hMenu, hInstance, lpParam);
+    OutputDebugStringW(L"Hello World!");
+    MH_QueueDisableHook(RegisterClassExW);
 
     IDXGIFactory2 *pFactory = {};
     CreateDXGIFactory(&IID_IDXGIFactory2, (LPVOID *)&pFactory);
@@ -98,7 +96,7 @@ HWND _CreateWindowExW_(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowNam
                                  .BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM,
                                  .SampleDesc.Count = D3D_FL9_1_SIMULTANEOUS_RENDER_TARGET_COUNT,
                                  .Windowed = TRUE,
-                                 .OutputWindow = hWnd}),
+                                 .OutputWindow = GetDesktopWindow()}),
         &pSwapChain, NULL, NULL, NULL);
 
     lpVtbl = *(LPVOID **)pSwapChain;
@@ -112,7 +110,7 @@ HWND _CreateWindowExW_(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowNam
     pSwapChain->lpVtbl->Release(pSwapChain);
 
     MH_ApplyQueued();
-    return hWnd;
+    return __RegisterClassExW__(_);
 }
 
 BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
@@ -138,8 +136,8 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 
         MH_Initialize();
 
-        MH_CreateHook(CreateWindowExW, &_CreateWindowExW_, (LPVOID)&__CreateWindowExW__);
-        MH_EnableHook(CreateWindowExW);
+        MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (LPVOID)&__RegisterClassExW__);
+        MH_EnableHook(RegisterClassExW);
 
         DisableThreadLibraryCalls(hInstance);
     }
