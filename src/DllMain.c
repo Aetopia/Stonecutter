@@ -1,8 +1,6 @@
-#define _MINAPPMODEL_H_
 #include <initguid.h>
 #include <MinHook.h>
 #include <d3d11_1.h>
-#include <appmodel.h>
 #include <windows.ui.core.h>
 
 BOOL fForce = {};
@@ -119,12 +117,6 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
-        WCHAR szPackageFamilyName[PACKAGE_FAMILY_NAME_MAX_LENGTH] = {};
-        if (GetCurrentPackageFamilyName(&((UINT32){PACKAGE_FAMILY_NAME_MAX_LENGTH}), szPackageFamilyName) ||
-            CompareStringOrdinal(szPackageFamilyName, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) !=
-                CSTR_EQUAL)
-            return FALSE;
-
         HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
         if (!hMutex || GetLastError())
         {
