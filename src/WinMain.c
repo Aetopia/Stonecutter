@@ -14,54 +14,41 @@ VOID WinMainCRTStartup()
     HANDLE hObject = CreateMutexW(NULL, FALSE, L"Stonecutter");
     if (hObject && GetLastError())
     {
-        INT nArgs = {};
-        PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
-        for (INT _ = {}; _ < nArgs; _++)
-        {
-            if (CompareStringOrdinal(pArgs[_], -1, L"-p", -1, FALSE) != CSTR_EQUAL && nArgs > _ + 1)
-                continue;
+        HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE,
+                                      StrToIntW(CommandLineToArgvW(GetCommandLineW(), &((INT){}))[MSG_PEEK]));
 
-            HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, StrToIntW(pArgs[++_]));
+        PathRemoveFileSpecW(szPath);
 
-            WCHAR szPackageFamilyName[PACKAGE_FAMILY_NAME_MAX_LENGTH] = {};
-            GetPackageFamilyName(hProcess, &((UINT32){PACKAGE_FAMILY_NAME_MAX_LENGTH}), szPackageFamilyName);
-            if (CompareStringOrdinal(szPackageFamilyName, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, FALSE) ==
-                CSTR_EQUAL)
-            {
-                PathRemoveFileSpecW(szPath);
+        PACL pAcl = {};
+        GetNamedSecurityInfoW(lstrcatW(szPath, L"\\Stonecutter.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL,
+                              NULL, &pAcl, NULL, NULL);
+        SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
+                         &((EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE,
+                                              .grfAccessMode = SET_ACCESS,
+                                              .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+                                              .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
+                                                          .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
+                                                          .ptstrName = L"ALL APPLICATION PACKAGES"}}),
+                         pAcl, &pAcl);
+        SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
 
-                PACL pAcl = {};
-                GetNamedSecurityInfoW(lstrcatW(szPath, L"\\Stonecutter.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
-                                      NULL, NULL, &pAcl, NULL, NULL);
-                SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
-                                 &((EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE,
-                                                      .grfAccessMode = SET_ACCESS,
-                                                      .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
-                                                      .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
-                                                                  .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
-                                                                  .ptstrName = L"ALL APPLICATION PACKAGES"}}),
-                                 pAcl, &pAcl);
-                SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
+        LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+        WriteProcessMemory(hProcess, lpBaseAddress, szPath, sizeof(szPath), NULL);
 
-                LPVOID lpBaseAddress =
-                    VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-                WriteProcessMemory(hProcess, lpBaseAddress, szPath, sizeof(szPath), NULL);
+        HANDLE hThread =
+            CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL);
+        WaitForSingleObject(hThread, INFINITE);
+        VirtualFreeEx(hProcess, lpBaseAddress, 0, MEM_RELEASE);
+        CloseHandle(hThread);
 
-                HANDLE hThread =
-                    CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL);
-                WaitForSingleObject(hThread, INFINITE);
-                VirtualFreeEx(hProcess, lpBaseAddress, 0, MEM_RELEASE);
-                CloseHandle(hThread);
+        HANDLE hModule = LoadLibraryExW(L"ntdll.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        ((NTSTATUS(*)(HANDLE))GetProcAddress(hModule, "NtResumeProcess"))(hProcess);
+        FreeLibrary(hModule);
 
-                HANDLE hModule = LoadLibraryExW(L"ntdll.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
-                ((NTSTATUS(*)(HANDLE))GetProcAddress(hModule, "NtResumeProcess"))(hProcess);
-                FreeLibrary(hModule);
-            }
+        CloseHandle(hProcess);
 
-            CloseHandle(hProcess);
-            break;
-        }
-        goto _;
+        CloseHandle(hObject);
+        ExitProcess(EXIT_SUCCESS);
     }
 
     PSID pSid = {};
@@ -77,7 +64,8 @@ VOID WinMainCRTStartup()
     if (fExists)
     {
         ShellExecuteW(NULL, NULL, L"shell:AppsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, NULL, SW_HIDE);
-        goto _;
+        CloseHandle(hObject);
+        ExitProcess(EXIT_SUCCESS);
     }
 
     CoInitialize(NULL);
@@ -103,7 +91,7 @@ VOID WinMainCRTStartup()
 
     pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
-_:
+
     CloseHandle(hObject);
     ExitProcess(EXIT_SUCCESS);
 }
