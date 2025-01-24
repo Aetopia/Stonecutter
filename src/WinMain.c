@@ -69,20 +69,6 @@ VOID WinMainCRTStartup()
         ExitProcess(EXIT_SUCCESS);
     }
 
-    PSID pSid = {};
-    DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
-
-    WCHAR szName[MAX_PATH] = {};
-    GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szName, &((ULONG){MAX_PATH}));
-
-    HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
-    if (GetLastError() && CloseHandle(hMutex))
-    {
-        ShellExecuteW(NULL, NULL, L"shell:AppsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, NULL, SW_HIDE);
-        CloseHandle(hObject);
-        ExitProcess(EXIT_SUCCESS);
-    }
-
     CoInitialize(NULL);
 
     IPackageDebugSettings *pSettings = {};
