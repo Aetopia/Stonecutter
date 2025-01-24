@@ -1,11 +1,8 @@
 #define _MINAPPMODEL_H_
 #include <initguid.h>
-#include <windows.h>
 #include <shobjidl.h>
 #include <aclapi.h>
 #include <appmodel.h>
-#include <stdio.h>
-#include <tlhelp32.h>
 #include <shlwapi.h>
 #include <userenv.h>
 
@@ -69,6 +66,23 @@ VOID WinMainCRTStartup()
         ExitProcess(EXIT_SUCCESS);
     }
 
+    PSID pSid = {};
+    DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
+
+    WCHAR szName[MAX_PATH] = {};
+    GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szName, &((ULONG){MAX_PATH}));
+
+    HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
+    BOOL fExists = hMutex && GetLastError();
+    CloseHandle(hMutex);
+
+    if (fExists)
+    {
+        ShellExecuteW(NULL, NULL, L"shell:AppsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, NULL, SW_HIDE);
+        CloseHandle(hObject);
+        ExitProcess(EXIT_SUCCESS);
+    }
+
     CoInitialize(NULL);
 
     IPackageDebugSettings *pSettings = {};
@@ -85,8 +99,8 @@ VOID WinMainCRTStartup()
 
     pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
     pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
-    pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, szPath, NULL);
 
+    pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, szPath, NULL);
     pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI,
                                           &((DWORD){}));
     pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);

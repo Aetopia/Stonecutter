@@ -5,7 +5,7 @@
 #include <appmodel.h>
 #include <windows.ui.core.h>
 
-BOOL _ = {};
+BOOL fForce = {};
 
 HRESULT (*__ResizeBuffers__)(IDXGISwapChain *, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
 
@@ -58,7 +58,7 @@ HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, IUnknown *pDevice,
                                        __x_ABI_CWindows_CUI_CCore_CICoreWindow *pWindow, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                        IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain)
 {
-    if (_)
+    if (fForce)
     {
         ID3D11Device *_ = NULL;
         if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (LPVOID *)&_))
@@ -76,7 +76,6 @@ HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, IUnknown *pDevice,
 
 HWND _RegisterClassExW_(LPWNDCLASSEXW _)
 {
-    OutputDebugStringW(L"Hello World!");
     MH_QueueDisableHook(RegisterClassExW);
 
     IDXGIFactory2 *pFactory = {};
@@ -132,7 +131,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 
         WCHAR szFileName[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
-        _ = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
+        fForce = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
 
         MH_Initialize();
 
