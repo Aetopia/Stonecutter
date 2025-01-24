@@ -60,10 +60,10 @@ HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, IUnknown *pDevice,
 {
     if (fForce)
     {
-        ID3D11Device *_ = NULL;
-        if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (LPVOID *)&_))
+        LPUNKNOWN pUnknown = NULL;
+        if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (LPVOID *)&pUnknown))
             return DXGI_ERROR_INVALID_CALL;
-        _->lpVtbl->Release(_);
+        pUnknown->lpVtbl->Release(pUnknown);
     }
 
     LPVOID pTarget = (*(LPVOID **)pWindow)[15];
