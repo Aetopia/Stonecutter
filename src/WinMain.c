@@ -61,9 +61,7 @@ VOID WinMainCRTStartup()
             CloseHandle(hProcess);
             break;
         }
-
-        CloseHandle(hObject);
-        ExitProcess(EXIT_SUCCESS);
+        goto _;
     }
 
     PSID pSid = {};
@@ -79,8 +77,7 @@ VOID WinMainCRTStartup()
     if (fExists)
     {
         ShellExecuteW(NULL, NULL, L"shell:AppsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, NULL, SW_HIDE);
-        CloseHandle(hObject);
-        ExitProcess(EXIT_SUCCESS);
+        goto _;
     }
 
     CoInitialize(NULL);
@@ -105,7 +102,7 @@ VOID WinMainCRTStartup()
                                           &((DWORD){}));
     pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
-
+_:
     CloseHandle(hObject);
     ExitProcess(EXIT_SUCCESS);
 }
