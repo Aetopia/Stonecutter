@@ -35,10 +35,10 @@ VOID WinMainCRTStartup()
         LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
         WriteProcessMemory(hProcess, lpBaseAddress, szPath, sizeof(szPath), NULL);
 
-        HANDLE hThread =
-            CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryW, lpBaseAddress, 0, NULL);
+        HANDLE hThread = CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (LPTHREAD_START_ROUTINE)LoadLibraryW,
+                                            lpBaseAddress, 0, NULL);
         WaitForSingleObject(hThread, INFINITE);
-        VirtualFreeEx(hProcess, lpBaseAddress, 0, MEM_RELEASE);
+        VirtualFreeEx(hProcess, lpBaseAddress, (SIZE_T){}, MEM_RELEASE);
         CloseHandle(hThread);
 
         HANDLE hModule = LoadLibraryExW(L"ntdll.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
