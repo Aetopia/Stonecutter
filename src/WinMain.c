@@ -18,7 +18,7 @@ VOID WinMainCRTStartup()
         PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
         for (INT _ = {}; _ < nArgs; _++)
         {
-            if (CompareStringOrdinal(pArgs[_], -1, L"-p", -1, FALSE) != CSTR_EQUAL)
+            if (CompareStringOrdinal(pArgs[_], -1, L"-p", -1, FALSE) != CSTR_EQUAL && nArgs > _ + 1)
                 continue;
 
             HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, StrToIntW(pArgs[++_]));
