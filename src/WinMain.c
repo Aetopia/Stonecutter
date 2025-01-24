@@ -100,6 +100,7 @@ VOID WinMainCRTStartup()
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, szPath, NULL);
     pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI,
                                           &((DWORD){}));
+                                          
     pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
 _:
