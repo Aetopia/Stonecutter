@@ -93,7 +93,7 @@ VOID WinMainCRTStartup()
     WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
     GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){PACKAGE_GRAPH_MIN_SIZE}), (PWSTR[]){},
                                &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
-  
+
     pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
     pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
 
