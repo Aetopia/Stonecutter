@@ -117,6 +117,8 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
+        DisableThreadLibraryCalls(hInstance);
+
         HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
         if (!hMutex || GetLastError())
         {
@@ -132,8 +134,6 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 
         MH_CreateHook(CreateWindowExW, &_CreateWindowExW_, (LPVOID)&__CreateWindowExW__);
         MH_EnableHook(CreateWindowExW);
-
-        DisableThreadLibraryCalls(hInstance);
     }
     return TRUE;
 }
