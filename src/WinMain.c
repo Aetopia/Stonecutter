@@ -4,7 +4,6 @@
 #include <aclapi.h>
 #include <appmodel.h>
 #include <shlwapi.h>
-#include <userenv.h>
 
 VOID WinMainCRTStartup()
 {
