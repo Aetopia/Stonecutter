@@ -12,7 +12,9 @@ VOID WinMainCRTStartup()
     QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &((DWORD){MAX_PATH}));
 
     HANDLE hObject = CreateMutexW(NULL, FALSE, L"Stonecutter");
-    if (hObject && GetLastError())
+    if (!hObject)
+        ExitProcess(EXIT_SUCCESS);
+    else if (GetLastError())
     {
         PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &((INT){}));
 
