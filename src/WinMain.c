@@ -16,8 +16,6 @@ VOID WinMainCRTStartup()
         ExitProcess(EXIT_SUCCESS);
     else if (GetLastError())
     {
-        PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &((INT){}));
-
         PathRemoveFileSpecW(szPath);
 
         PACL pAcl = {};
@@ -32,6 +30,8 @@ VOID WinMainCRTStartup()
                                                           .ptstrName = L"ALL APPLICATION PACKAGES"}}),
                          pAcl, &pAcl);
         SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
+
+        PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &((INT){}));
 
         HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, StrToIntW(pArgs[2]));
         LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
