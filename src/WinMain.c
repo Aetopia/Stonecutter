@@ -10,14 +10,13 @@ VOID WinMainCRTStartup()
     WCHAR szPath[MAX_PATH] = {};
     QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &((DWORD){MAX_PATH}));
 
-    HANDLE hObject = CreateMutexW(NULL, FALSE, L"Stonecutter");
-    if (!hObject)
+    HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
+    if (!hMutex)
         ExitProcess(EXIT_SUCCESS);
     else if (GetLastError())
     {
-        PathRemoveFileSpecW(szPath);
-
         PACL pAcl = {};
+        PathRemoveFileSpecW(szPath);
         GetNamedSecurityInfoW(lstrcatW(szPath, L"\\Stonecutter.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL,
                               NULL, &pAcl, NULL, NULL);
         SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
@@ -31,14 +30,15 @@ VOID WinMainCRTStartup()
         SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
 
         PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &((INT){}));
-
         HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, StrToIntW(pArgs[2]));
+
         LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
         WriteProcessMemory(hProcess, lpBaseAddress, szPath, sizeof(szPath), NULL);
+
         HANDLE hThread = CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (LPTHREAD_START_ROUTINE)LoadLibraryW,
                                             lpBaseAddress, 0, NULL);
-
         WaitForSingleObject(hThread, INFINITE);
+
         VirtualFreeEx(hProcess, lpBaseAddress, (SIZE_T){}, MEM_RELEASE);
         CloseHandle(hThread);
         CloseHandle(hProcess);
@@ -47,7 +47,7 @@ VOID WinMainCRTStartup()
         ResumeThread(hThread);
         CloseHandle(hThread);
 
-        CloseHandle(hObject);
+        CloseHandle(hMutex);
         ExitProcess(EXIT_SUCCESS);
     }
 
@@ -74,6 +74,6 @@ VOID WinMainCRTStartup()
     pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
 
-    CloseHandle(hObject);
+    CloseHandle(hMutex);
     ExitProcess(EXIT_SUCCESS);
 }

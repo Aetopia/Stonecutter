@@ -15,7 +15,7 @@ HRESULT(*__put_PointerCursor__)
 (__x_ABI_CWindows_CUI_CCore_CICoreWindow *, __x_ABI_CWindows_CUI_CCore_CICoreCursor *) = {};
 
 HRESULT(*__CreateSwapChainForCoreWindow__)
-(IDXGIFactory2 *, IUnknown *, __x_ABI_CWindows_CUI_CCore_CICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, IDXGIOutput *,
+(IDXGIFactory2 *, LPUNKNOWN, __x_ABI_CWindows_CUI_CCore_CICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, IDXGIOutput *,
  IDXGISwapChain1 **) = {};
 
 HWND (*__CreateWindowExW__)(DWORD, LPCWSTR, LPCWSTR, DWORD, INT, INT, INT, INT, HWND, HMENU, HINSTANCE, LPVOID) = {};
@@ -54,7 +54,7 @@ HRESULT _put_PointerCursor_(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This,
     return __put_PointerCursor__(This, value);
 }
 
-HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, IUnknown *pDevice,
+HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, LPUNKNOWN pDevice,
                                        __x_ABI_CWindows_CUI_CCore_CICoreWindow *pWindow, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                        IDXGIOutput *pRestrictToOutput, IDXGISwapChain1 **ppSwapChain)
 {
@@ -124,13 +124,6 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
             CompareStringOrdinal(szPackageFamilyName, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) !=
                 CSTR_EQUAL)
             return FALSE;
-
-        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
-        if (!hMutex || GetLastError())
-        {
-            CloseHandle(hMutex);
-            return FALSE;
-        }
 
         WCHAR szFileName[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
