@@ -47,6 +47,7 @@ VOID WinMainCRTStartup()
         ResumeThread(hThread);
         CloseHandle(hThread);
 
+        LocalFree(pArgs);
         CloseHandle(hMutex);
         ExitProcess(EXIT_SUCCESS);
     }
@@ -73,6 +74,10 @@ VOID WinMainCRTStartup()
                                           &((DWORD){}));
     pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
     pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
+
+    pSettings->lpVtbl->Release(pSettings);
+    pManager->lpVtbl->Release(pManager);
+    CoUninitialize();
 
     CloseHandle(hMutex);
     ExitProcess(EXIT_SUCCESS);
