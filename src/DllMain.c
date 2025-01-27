@@ -77,6 +77,10 @@ HRESULT _CreateSwapChainForCoreWindow_(IDXGIFactory2 *This, LPUNKNOWN pDevice,
 HWND _CreateWindowExW_(DWORD dwExStyle, LPCWSTR lpClassName, LPCWSTR lpWindowName, DWORD dwStyle, INT X, INT Y,
                        INT nWidth, INT nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
+    WCHAR szPath[MAX_PATH] = {};
+    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
+    fForce = GetPrivateProfileIntW(&((WCHAR){}), &((WCHAR){}), FALSE, szPath) == TRUE;
+
     MH_QueueDisableHook(CreateWindowExW);
     HWND hWnd = __CreateWindowExW__(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent,
                                     hMenu, hInstance, lpParam);
@@ -124,10 +128,6 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
             CompareStringOrdinal(szPackageFamilyName, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) !=
                 CSTR_EQUAL)
             return FALSE;
-
-        WCHAR szFileName[MAX_PATH] = {};
-        ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szFileName, MAX_PATH);
-        fForce = GetPrivateProfileIntW(L"", L"", FALSE, szFileName) == TRUE;
 
         MH_Initialize();
         MH_CreateHook(CreateWindowExW, &_CreateWindowExW_, (LPVOID)&__CreateWindowExW__);
