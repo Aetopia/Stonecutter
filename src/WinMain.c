@@ -1,9 +1,10 @@
+
 #define _MINAPPMODEL_H_
+#include <aclapi.h>
+#include <shlwapi.h>
+#include <appmodel.h>
 #include <initguid.h>
 #include <shobjidl.h>
-#include <aclapi.h>
-#include <appmodel.h>
-#include <shlwapi.h>
 
 VOID WinMainCRTStartup()
 {
@@ -11,74 +12,84 @@ VOID WinMainCRTStartup()
     QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &((DWORD){MAX_PATH}));
 
     HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
-    if (!hMutex)
-        ExitProcess(EXIT_SUCCESS);
-    else if (GetLastError())
+    if (hMutex)
     {
-        PACL pAcl = {};
-        PathRemoveFileSpecW(szPath);
-        GetNamedSecurityInfoW(lstrcatW(szPath, L"\\Stonecutter.dll"), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL,
-                              NULL, &pAcl, NULL, NULL);
-        SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
-                         &((EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
-                                              .grfAccessMode = SET_ACCESS,
-                                              .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
-                                              .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
-                                                          .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
-                                                          .ptstrName = L"ALL APPLICATION PACKAGES"}}),
-                         pAcl, &pAcl);
-        SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
+        if (!GetLastError())
+        {
+            CoInitialize(NULL);
 
-        PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &((INT){}));
-        HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, StrToIntW(pArgs[2]));
+            IPackageDebugSettings *pSettings = {};
+            CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
+                             (PVOID *)&pSettings);
 
-        LPVOID lpBaseAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-        WriteProcessMemory(hProcess, lpBaseAddress, szPath, sizeof(szPath), NULL);
+            IApplicationActivationManager *pManager = {};
+            CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
+                             &IID_IApplicationActivationManager, (PVOID *)&pManager);
 
-        HANDLE hThread = CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (LPTHREAD_START_ROUTINE)LoadLibraryW,
-                                            lpBaseAddress, 0, NULL);
-        WaitForSingleObject(hThread, INFINITE);
+            WCHAR szName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
+            GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT32){PACKAGE_GRAPH_MIN_SIZE}),
+                                       (PWSTR[]){}, &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szName);
 
-        VirtualFreeEx(hProcess, lpBaseAddress, (SIZE_T){}, MEM_RELEASE);
-        CloseHandle(hThread);
-        CloseHandle(hProcess);
+            pSettings->lpVtbl->TerminateAllProcesses(pSettings, szName);
+            pSettings->lpVtbl->DisableDebugging(pSettings, szName);
+            pSettings->lpVtbl->EnableDebugging(pSettings, szName, szPath, NULL);
 
-        hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, StrToIntW(pArgs[4]));
-        ResumeThread(hThread);
-        CloseHandle(hThread);
+            pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL,
+                                                  AO_NOERRORUI, &((DWORD){}));
+            pSettings->lpVtbl->DisableDebugging(pSettings, szName);
+            pSettings->lpVtbl->EnableDebugging(pSettings, szName, NULL, NULL);
 
-        LocalFree(pArgs);
-        CloseHandle(hMutex);
-        ExitProcess(EXIT_SUCCESS);
+            pManager->lpVtbl->Release(pManager);
+            pSettings->lpVtbl->Release(pSettings);
+            CoUninitialize();
+        }
+        else
+        {
+            INT nArgs = {};
+            PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+            DWORD dwProcessId = {}, dwThreadId = {};
+            for (INT _ = {}; _ < nArgs; _++)
+            {
+                if (CompareStringOrdinal(L"-p", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL && (_ + 1) < nArgs)
+                    dwProcessId = StrToIntW(pArgs[++_]);
+                else if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL && (_ + 1) < nArgs)
+                    dwThreadId = StrToIntW(pArgs[++_]);
+            }
+            LocalFree(pArgs);
+
+            PathRenameExtensionW(szPath, L".dll");
+
+            PACL pAcl = {};
+            GetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pAcl, NULL, NULL);
+            SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
+                             &((EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
+                                                  .grfAccessMode = SET_ACCESS,
+                                                  .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+                                                  .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
+                                                              .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
+                                                              .ptstrName = L"ALL APPLICATION PACKAGES"}}),
+                             pAcl, &pAcl);
+            SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
+
+            HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
+
+            PVOID pAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+            WriteProcessMemory(hProcess, pAddress, szPath, sizeof(szPath), NULL);
+
+            HANDLE hThread =
+                CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (LPTHREAD_START_ROUTINE)LoadLibraryW, pAddress, 0, NULL);
+            WaitForSingleObject(hThread, INFINITE);
+
+            VirtualFreeEx(hProcess, pAddress, (SIZE_T){}, MEM_RELEASE);
+            CloseHandle(hThread);
+            CloseHandle(hProcess);
+
+            hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, dwThreadId);
+            ResumeThread(hThread);
+            CloseHandle(hThread);
+        }
     }
-
-    CoInitialize(NULL);
-
-    IPackageDebugSettings *pSettings = {};
-    CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
-                     (LPVOID *)&pSettings);
-
-    IApplicationActivationManager *pManager = {};
-    CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
-                     &IID_IApplicationActivationManager, (LPVOID *)&pManager);
-
-    WCHAR szPackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
-    GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT){PACKAGE_GRAPH_MIN_SIZE}), (PWSTR[]){},
-                               &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szPackageFullName);
-
-    pSettings->lpVtbl->TerminateAllProcesses(pSettings, szPackageFullName);
-    pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
-    pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, szPath, NULL);
-
-    pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, AO_NOERRORUI,
-                                          &((DWORD){}));
-    pSettings->lpVtbl->DisableDebugging(pSettings, szPackageFullName);
-    pSettings->lpVtbl->EnableDebugging(pSettings, szPackageFullName, NULL, NULL);
-
-    pSettings->lpVtbl->Release(pSettings);
-    pManager->lpVtbl->Release(pManager);
-    CoUninitialize();
-
     CloseHandle(hMutex);
+
     ExitProcess(EXIT_SUCCESS);
 }
