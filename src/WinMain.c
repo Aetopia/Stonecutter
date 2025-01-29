@@ -40,7 +40,7 @@ VOID WinMainCRTStartup()
 
             pManager->lpVtbl->Release(pManager);
             pSettings->lpVtbl->Release(pSettings);
-            
+
             CoUninitialize();
         }
         else
@@ -48,13 +48,11 @@ VOID WinMainCRTStartup()
             INT nArgs = {};
             PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
             DWORD dwProcessId = {}, dwThreadId = {};
-            for (INT _ = {}; _ < nArgs; _++)
-            {
-                if (CompareStringOrdinal(L"-p", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL && (_ + 1) < nArgs)
+            for (INT _ = {}; _ + 1 < nArgs; _++)
+                if (CompareStringOrdinal(L"-p", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
                     dwProcessId = StrToIntW(pArgs[++_]);
-                else if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL && (_ + 1) < nArgs)
+                else if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
                     dwThreadId = StrToIntW(pArgs[++_]);
-            }
             LocalFree(pArgs);
 
             PathRenameExtensionW(szPath, L".dll");

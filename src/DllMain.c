@@ -123,17 +123,14 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
-        WCHAR szPackageFamilyName[PACKAGE_FAMILY_NAME_MAX_LENGTH] = {};
-        if (GetCurrentPackageFamilyName(&((UINT32){PACKAGE_FAMILY_NAME_MAX_LENGTH}), szPackageFamilyName) ||
-            CompareStringOrdinal(szPackageFamilyName, -1, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", -1, TRUE) !=
-                CSTR_EQUAL)
+        if (GetCurrentPackageFamilyName(&((UINT32){}), NULL) != ERROR_INSUFFICIENT_BUFFER)
             return FALSE;
+        
+        DisableThreadLibraryCalls(hInstance);
 
         MH_Initialize();
         MH_CreateHook(CreateWindowExW, &_CreateWindowExW_, (LPVOID)&__CreateWindowExW__);
         MH_EnableHook(CreateWindowExW);
-
-        DisableThreadLibraryCalls(hInstance);
     }
     return TRUE;
 }
