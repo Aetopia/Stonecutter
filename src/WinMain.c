@@ -7,12 +7,12 @@
 
 VOID WinMainCRTStartup()
 {
-    WCHAR szPath[MAX_PATH] = {};
-    QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &((DWORD){MAX_PATH}));
-
     HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
     if (hMutex)
     {
+        WCHAR szPath[MAX_PATH] = {};
+        QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &((DWORD){MAX_PATH}));
+
         if (!GetLastError())
         {
             CoInitialize(NULL);
@@ -40,6 +40,7 @@ VOID WinMainCRTStartup()
 
             pManager->lpVtbl->Release(pManager);
             pSettings->lpVtbl->Release(pSettings);
+            
             CoUninitialize();
         }
         else
