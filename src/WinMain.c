@@ -1,4 +1,3 @@
-
 #define _MINAPPMODEL_H_
 #include <aclapi.h>
 #include <shlwapi.h>
