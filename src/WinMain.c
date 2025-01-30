@@ -13,37 +13,7 @@ VOID WinMainCRTStartup()
         WCHAR szPath[MAX_PATH] = {};
         QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &((DWORD){MAX_PATH}));
 
-        if (!GetLastError())
-        {
-            CoInitialize(NULL);
-
-            IPackageDebugSettings *pSettings = {};
-            CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
-                             (PVOID *)&pSettings);
-
-            IApplicationActivationManager *pManager = {};
-            CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
-                             &IID_IApplicationActivationManager, (PVOID *)&pManager);
-
-            WCHAR szName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
-            GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT32){PACKAGE_GRAPH_MIN_SIZE}),
-                                       (PWSTR[]){}, &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szName);
-
-            pSettings->lpVtbl->TerminateAllProcesses(pSettings, szName);
-            pSettings->lpVtbl->DisableDebugging(pSettings, szName);
-            pSettings->lpVtbl->EnableDebugging(pSettings, szName, szPath, NULL);
-
-            pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL,
-                                                  AO_NOERRORUI, &((DWORD){}));
-            pSettings->lpVtbl->DisableDebugging(pSettings, szName);
-            pSettings->lpVtbl->EnableDebugging(pSettings, szName, NULL, NULL);
-
-            pManager->lpVtbl->Release(pManager);
-            pSettings->lpVtbl->Release(pSettings);
-
-            CoUninitialize();
-        }
-        else
+        if (GetLastError())
         {
             INT nArgs = {};
             PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
@@ -84,6 +54,36 @@ VOID WinMainCRTStartup()
             hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, dwThreadId);
             ResumeThread(hThread);
             CloseHandle(hThread);
+        }
+        else
+        {
+            CoInitialize(NULL);
+
+            IPackageDebugSettings *pSettings = {};
+            CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
+                             (PVOID *)&pSettings);
+
+            IApplicationActivationManager *pManager = {};
+            CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
+                             &IID_IApplicationActivationManager, (PVOID *)&pManager);
+
+            WCHAR szName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
+            GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT32){PACKAGE_GRAPH_MIN_SIZE}),
+                                       (PWSTR[]){}, &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szName);
+
+            pSettings->lpVtbl->TerminateAllProcesses(pSettings, szName);
+            pSettings->lpVtbl->DisableDebugging(pSettings, szName);
+            pSettings->lpVtbl->EnableDebugging(pSettings, szName, szPath, NULL);
+
+            pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL,
+                                                  AO_NOERRORUI, &((DWORD){}));
+            pSettings->lpVtbl->DisableDebugging(pSettings, szName);
+            pSettings->lpVtbl->EnableDebugging(pSettings, szName, NULL, NULL);
+
+            pManager->lpVtbl->Release(pManager);
+            pSettings->lpVtbl->Release(pSettings);
+
+            CoUninitialize();
         }
     }
     CloseHandle(hMutex);
