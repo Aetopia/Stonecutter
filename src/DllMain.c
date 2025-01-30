@@ -36,7 +36,9 @@ HRESULT _put_PointerCursor_(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This,
     __x_ABI_CWindows_CUI_CCore_CICoreCursor *pCursor = NULL;
     This->lpVtbl->get_PointerCursor(This, &pCursor);
 
-    if (!pCursor)
+    if (pCursor)
+        pCursor->lpVtbl->Release(pCursor);
+    else
     {
         __x_ABI_CWindows_CFoundation_CRect _ = {};
         This->lpVtbl->get_Bounds(This, &_);
@@ -47,8 +49,6 @@ HRESULT _put_PointerCursor_(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This,
             pWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + _.Width / 2, _.Y + _.Height / 2});
         pWindow->lpVtbl->Release(pWindow);
     }
-    else
-        pCursor->lpVtbl->Release(pCursor);
 
     return __put_PointerCursor__(This, value);
 }
@@ -124,7 +124,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
     {
         if (GetCurrentPackageFamilyName(&((UINT32){}), NULL) != ERROR_INSUFFICIENT_BUFFER)
             return FALSE;
-        
+
         DisableThreadLibraryCalls(hInstance);
 
         MH_Initialize();
