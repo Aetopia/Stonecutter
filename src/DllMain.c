@@ -1,4 +1,3 @@
-#define _MINAPPMODEL_H_
 #include <initguid.h>
 #include <MinHook.h>
 #include <d3d11_1.h>
