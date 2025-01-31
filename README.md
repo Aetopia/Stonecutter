@@ -56,8 +56,8 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 - Add the following contents:
       
   ```ini
-  []
-  =1
+  [Stonecutter]
+  Force = 1
   ```
 
 - Save the file.
