@@ -109,7 +109,7 @@ HWND _CreateWindowExW_(DWORD dwExStyle, PCWSTR lpClassName, PCWSTR lpWindowName,
         MH_CreateHook(pTarget, &_CreateSwapChainForCoreWindow_, (PVOID *)&__CreateSwapChainForCoreWindow__);
         MH_EnableHook(pTarget);
 
-        pUnknown->lpVtbl->Release(pUnknown);
+        fHook = !pUnknown->lpVtbl->Release(pUnknown);
     }
     return __CreateWindowExW__(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu,
                                hInstance, lpParam);
