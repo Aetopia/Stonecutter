@@ -70,7 +70,7 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKN
     HRESULT hResult = __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 
     static BOOL fHook = {};
-    if (!fHook)
+    if (!hResult && !fHook)
     {
         PVOID *pVtbl = *(PVOID **)*ppSwapChain, pTarget = pVtbl[8];
 
