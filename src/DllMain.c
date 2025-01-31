@@ -9,26 +9,21 @@ BOOL fForce = {};
 
 HRESULT (*__Present__)(LPUNKNOWN, UINT, UINT) = {};
 
-HRESULT (*__ResizeBuffers__)(LPUNKNOWN, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
-
-HRESULT(*__put_PointerCursor__)
-(__x_ABI_CWindows_CUI_CCore_CICoreWindow *, __x_ABI_CWindows_CUI_CCore_CICoreCursor *) = {};
-
-HRESULT(*__CreateSwapChainForCoreWindow__)
-(LPUNKNOWN, LPUNKNOWN, LPUNKNOWN, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN, LPUNKNOWN *) = {};
-
-HWND (*__CreateWindowExW__)(DWORD, PCWSTR, PCWSTR, DWORD, INT, INT, INT, INT, HWND, HMENU, HINSTANCE, PVOID) = {};
-
 HRESULT _Present_(LPUNKNOWN This, UINT SyncInterval, UINT Flags)
 {
     return __Present__(This, SyncInterval, SyncInterval ? Flags : DXGI_PRESENT_ALLOW_TEARING);
 }
+
+HRESULT (*__ResizeBuffers__)(LPUNKNOWN, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
 
 HRESULT _ResizeBuffers_(LPUNKNOWN This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
                         UINT SwapChainFlags)
 {
     return __ResizeBuffers__(This, BufferCount, Width, Height, NewFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
+
+HRESULT(*__put_PointerCursor__)
+(__x_ABI_CWindows_CUI_CCore_CICoreWindow *, __x_ABI_CWindows_CUI_CCore_CICoreCursor *) = {};
 
 HRESULT _put_PointerCursor_(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This,
                             __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
@@ -55,6 +50,9 @@ HRESULT _put_PointerCursor_(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This,
 
     return __put_PointerCursor__(This, value);
 }
+
+HRESULT(*__CreateSwapChainForCoreWindow__)
+(LPUNKNOWN, LPUNKNOWN, LPUNKNOWN, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN, LPUNKNOWN *) = {};
 
 HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKNOWN pWindow,
                                        DXGI_SWAP_CHAIN_DESC1 *pDesc, LPUNKNOWN pRestrictToOutput,
@@ -90,6 +88,8 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKN
 
     return hResult;
 }
+
+HWND (*__CreateWindowExW__)(DWORD, PCWSTR, PCWSTR, DWORD, INT, INT, INT, INT, HWND, HMENU, HINSTANCE, PVOID) = {};
 
 HWND _CreateWindowExW_(DWORD dwExStyle, PCWSTR lpClassName, PCWSTR lpWindowName, DWORD dwStyle, INT X, INT Y,
                        INT nWidth, INT nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, PVOID lpParam)
