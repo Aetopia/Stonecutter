@@ -1,8 +1,8 @@
 #define _MINAPPMODEL_H_
+#include <initguid.h>
 #include <aclapi.h>
 #include <shlwapi.h>
 #include <appmodel.h>
-#include <initguid.h>
 #include <shobjidl.h>
 
 VOID WinMainCRTStartup()
