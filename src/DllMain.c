@@ -123,7 +123,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID lpReserved)
         DisableThreadLibraryCalls(hInstance);
 
         MH_Initialize();
-        MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (PVOID)&__RegisterClassExW__);
+        MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (PVOID *)&__RegisterClassExW__);
         MH_EnableHook(RegisterClassExW);
     }
     return TRUE;
