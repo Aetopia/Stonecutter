@@ -40,13 +40,16 @@ HRESULT _put_PointerCursor_(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This,
         pCursor->lpVtbl->Release(pCursor);
     else
     {
-        __x_ABI_CWindows_CFoundation_CRect _ = {};
-        This->lpVtbl->get_Bounds(This, &_);
+        __x_ABI_CWindows_CFoundation_CRect rcClient = {};
+        This->lpVtbl->get_Bounds(This, &rcClient);
 
         __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pWindow = {};
         This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (PVOID *)&pWindow);
+
         pWindow->lpVtbl->put_PointerPosition(
-            pWindow, (__x_ABI_CWindows_CFoundation_CPoint){_.X + _.Width / 2, _.Y + _.Height / 2});
+            pWindow,
+            (__x_ABI_CWindows_CFoundation_CPoint){rcClient.X + rcClient.Width / 2, rcClient.Y + rcClient.Height / 2});
+
         pWindow->lpVtbl->Release(pWindow);
     }
 
@@ -66,10 +69,10 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKN
     }
 
     pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-    HRESULT _ = __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
+    HRESULT hResult = __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 
-    static BOOL $ = {};
-    if (!$)
+    static BOOL fHook = {};
+    if (!fHook)
     {
         PVOID *pVtbl = *(PVOID **)*ppSwapChain, pTarget = pVtbl[8];
 
@@ -82,10 +85,10 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKN
         MH_CreateHook(pTarget = (*(PVOID **)pWindow)[15], &_put_PointerCursor_, (PVOID *)&__put_PointerCursor__);
         MH_QueueEnableHook(pTarget);
 
-        $ = !MH_ApplyQueued();
+        fHook = !MH_ApplyQueued();
     }
 
-    return _;
+    return hResult;
 }
 
 HWND _CreateWindowExW_(DWORD dwExStyle, PCWSTR lpClassName, PCWSTR lpWindowName, DWORD dwStyle, INT X, INT Y,
