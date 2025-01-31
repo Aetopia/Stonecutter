@@ -94,24 +94,23 @@ HWND (*__CreateWindowExW__)(DWORD, PCWSTR, PCWSTR, DWORD, INT, INT, INT, INT, HW
 HWND _CreateWindowExW_(DWORD dwExStyle, PCWSTR lpClassName, PCWSTR lpWindowName, DWORD dwStyle, INT X, INT Y,
                        INT nWidth, INT nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, PVOID lpParam)
 {
-    WCHAR szPath[MAX_PATH] = {};
-    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
-    fForce = GetPrivateProfileIntW(L"Stonecutter", L"Force", FALSE, szPath) == TRUE;
+    static BOOL fHook = {};
+    if (!fHook)
+    {
+        WCHAR szPath[MAX_PATH] = {};
+        ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
+        fForce = GetPrivateProfileIntW(L"Stonecutter", L"Force", FALSE, szPath) == TRUE;
 
-    LPUNKNOWN pUnknown = {};
-    CreateDXGIFactory(&IID_IDXGIFactory2, (PVOID *)&pUnknown);
+        LPUNKNOWN pUnknown = {};
+        CreateDXGIFactory(&IID_IDXGIFactory2, (PVOID *)&pUnknown);
 
-    PVOID pTarget = (*(PVOID **)pUnknown)[16];
+        PVOID pTarget = (*(PVOID **)pUnknown)[16];
 
-    MH_CreateHook(pTarget, &_CreateSwapChainForCoreWindow_, (PVOID *)&__CreateSwapChainForCoreWindow__);
-    MH_QueueEnableHook(pTarget);
+        MH_CreateHook(pTarget, &_CreateSwapChainForCoreWindow_, (PVOID *)&__CreateSwapChainForCoreWindow__);
+        MH_EnableHook(pTarget);
 
-    pUnknown->lpVtbl->Release(pUnknown);
-
-    MH_QueueDisableHook(CreateWindowExW);
-
-    MH_ApplyQueued();
-
+        pUnknown->lpVtbl->Release(pUnknown);
+    }
     return __CreateWindowExW__(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu,
                                hInstance, lpParam);
 }
