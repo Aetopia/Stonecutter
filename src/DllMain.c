@@ -89,10 +89,9 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKN
     return hResult;
 }
 
-HWND (*__CreateWindowExW__)(DWORD, PCWSTR, PCWSTR, DWORD, INT, INT, INT, INT, HWND, HMENU, HINSTANCE, PVOID) = {};
+ATOM (*__RegisterClassExW__)(PWNDCLASSEXW) = {};
 
-HWND _CreateWindowExW_(DWORD dwExStyle, PCWSTR lpClassName, PCWSTR lpWindowName, DWORD dwStyle, INT X, INT Y,
-                       INT nWidth, INT nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, PVOID lpParam)
+ATOM _RegisterClassExW_(PWNDCLASSEXW _)
 {
     static BOOL fHook = {};
     if (!fHook)
@@ -111,8 +110,7 @@ HWND _CreateWindowExW_(DWORD dwExStyle, PCWSTR lpClassName, PCWSTR lpWindowName,
 
         fHook = !pUnknown->lpVtbl->Release(pUnknown);
     }
-    return __CreateWindowExW__(dwExStyle, lpClassName, lpWindowName, dwStyle, X, Y, nWidth, nHeight, hWndParent, hMenu,
-                               hInstance, lpParam);
+    return __RegisterClassExW__(_);
 }
 
 BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID lpReserved)
@@ -125,8 +123,8 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID lpReserved)
         DisableThreadLibraryCalls(hInstance);
 
         MH_Initialize();
-        MH_CreateHook(CreateWindowExW, &_CreateWindowExW_, (PVOID)&__CreateWindowExW__);
-        MH_EnableHook(CreateWindowExW);
+        MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (PVOID)&__RegisterClassExW__);
+        MH_EnableHook(RegisterClassExW);
     }
     return TRUE;
 }
