@@ -70,7 +70,7 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKN
     HRESULT hResult = __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 
     static BOOL fHook = {};
-    
+
     if (!fHook && !hResult)
     {
         PVOID *pVtbl = *(PVOID **)*ppSwapChain, pTarget = pVtbl[8];
@@ -126,6 +126,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID lpReserved)
         DisableThreadLibraryCalls(hInstance);
 
         MH_Initialize();
+       
         MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (PVOID *)&__RegisterClassExW__);
         MH_EnableHook(RegisterClassExW);
     }
