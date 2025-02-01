@@ -25,6 +25,7 @@ VOID WinMainCRTStartup()
                     dwProcessId = StrToIntW(pArgs[++_]);
                 else if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
                     dwThreadId = StrToIntW(pArgs[++_]);
+          
             LocalFree(pArgs);
 
             PathRenameExtensionW(szPath, L".dll");
@@ -88,7 +89,7 @@ VOID WinMainCRTStartup()
             CoUninitialize();
         }
     }
-    
+
     CloseHandle(hMutex);
 
     ExitProcess(EXIT_SUCCESS);
