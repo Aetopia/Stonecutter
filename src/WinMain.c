@@ -8,6 +8,7 @@
 VOID WinMainCRTStartup()
 {
     HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
+
     if (hMutex)
     {
         WCHAR szPath[MAX_PATH] = {};
@@ -18,6 +19,7 @@ VOID WinMainCRTStartup()
             INT nArgs = {};
             PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
             DWORD dwProcessId = {}, dwThreadId = {};
+
             for (INT _ = {}; _ + 1 < nArgs; _++)
                 if (CompareStringOrdinal(L"-p", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
                     dwProcessId = StrToIntW(pArgs[++_]);
@@ -86,6 +88,7 @@ VOID WinMainCRTStartup()
             CoUninitialize();
         }
     }
+    
     CloseHandle(hMutex);
 
     ExitProcess(EXIT_SUCCESS);

@@ -70,6 +70,7 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKN
     HRESULT hResult = __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 
     static BOOL fHook = {};
+    
     if (!fHook && !hResult)
     {
         PVOID *pVtbl = *(PVOID **)*ppSwapChain, pTarget = pVtbl[8];
@@ -94,6 +95,7 @@ ATOM (*__RegisterClassExW__)(PWNDCLASSEXW) = {};
 ATOM _RegisterClassExW_(PWNDCLASSEXW _)
 {
     static BOOL fHook = {};
+
     if (!fHook)
     {
         WCHAR szPath[MAX_PATH] = {};
@@ -110,6 +112,7 @@ ATOM _RegisterClassExW_(PWNDCLASSEXW _)
 
         fHook = !pUnknown->lpVtbl->Release(pUnknown);
     }
+
     return __RegisterClassExW__(_);
 }
 
