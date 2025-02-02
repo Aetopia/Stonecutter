@@ -12,7 +12,7 @@ VOID WinMainCRTStartup()
     if (hMutex)
     {
         WCHAR szPath[MAX_PATH] = {};
-        QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &((DWORD){MAX_PATH}));
+        QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &(DWORD){MAX_PATH});
 
         if (GetLastError())
         {
@@ -33,12 +33,12 @@ VOID WinMainCRTStartup()
             PACL pAcl = {};
 
             SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
-                             &((EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
-                                                  .grfAccessMode = SET_ACCESS,
-                                                  .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
-                                                  .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
-                                                              .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
-                                                              .ptstrName = L"ALL APPLICATION PACKAGES"}}),
+                             &(EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
+                                                 .grfAccessMode = SET_ACCESS,
+                                                 .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+                                                 .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
+                                                             .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
+                                                             .ptstrName = L"ALL APPLICATION PACKAGES"}},
                              NULL, &pAcl);
 
             SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
@@ -73,15 +73,15 @@ VOID WinMainCRTStartup()
                              &IID_IApplicationActivationManager, (PVOID *)&pManager);
 
             WCHAR szName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
-            GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT32){PACKAGE_GRAPH_MIN_SIZE}),
-                                       (PWSTR[]){}, &((UINT32){sizeof(szName) / sizeof(WCHAR)}), szName);
+            GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &(UINT32){PACKAGE_GRAPH_MIN_SIZE},
+                                       &(PWSTR){}, &(UINT32){sizeof(szName) / sizeof(WCHAR)}, szName);
 
             pSettings->lpVtbl->TerminateAllProcesses(pSettings, szName);
             pSettings->lpVtbl->DisableDebugging(pSettings, szName);
             pSettings->lpVtbl->EnableDebugging(pSettings, szName, szPath, NULL);
 
             pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL,
-                                                  AO_NOERRORUI, &((DWORD){}));
+                                                  AO_NOERRORUI, &(DWORD){});
             pSettings->lpVtbl->DisableDebugging(pSettings, szName);
             pSettings->lpVtbl->EnableDebugging(pSettings, szName, NULL, NULL);
 

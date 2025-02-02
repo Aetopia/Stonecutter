@@ -120,16 +120,16 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID lpReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
-        if (GetCurrentPackageFamilyName(&((UINT32){}), NULL) != ERROR_INSUFFICIENT_BUFFER)
+        if (GetCurrentPackageFamilyName(&(UINT32){}, NULL) != ERROR_INSUFFICIENT_BUFFER)
             return FALSE;
 
         DisableThreadLibraryCalls(hInstance);
 
         MH_Initialize();
-       
+
         MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (PVOID *)&__RegisterClassExW__);
         MH_EnableHook(RegisterClassExW);
     }
-    
+
     return TRUE;
 }
