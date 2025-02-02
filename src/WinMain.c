@@ -25,13 +25,13 @@ VOID WinMainCRTStartup()
                     dwProcessId = StrToIntW(pArgs[++_]);
                 else if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
                     dwThreadId = StrToIntW(pArgs[++_]);
-          
+
             LocalFree(pArgs);
 
             PathRenameExtensionW(szPath, L".dll");
 
             PACL pAcl = {};
-           
+
             SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
                              &((EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
                                                   .grfAccessMode = SET_ACCESS,
@@ -40,7 +40,7 @@ VOID WinMainCRTStartup()
                                                               .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
                                                               .ptstrName = L"ALL APPLICATION PACKAGES"}}),
                              NULL, &pAcl);
-          
+
             SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
 
             HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
@@ -49,7 +49,7 @@ VOID WinMainCRTStartup()
             WriteProcessMemory(hProcess, pAddress, szPath, sizeof(szPath), NULL);
 
             HANDLE hThread =
-                CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (LPTHREAD_START_ROUTINE)LoadLibraryW, pAddress, 0, NULL);
+                CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (PTHREAD_START_ROUTINE)LoadLibraryW, pAddress, 0, NULL);
             WaitForSingleObject(hThread, INFINITE);
 
             VirtualFreeEx(hProcess, pAddress, (SIZE_T){}, MEM_RELEASE);
@@ -72,9 +72,9 @@ VOID WinMainCRTStartup()
             CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
                              &IID_IApplicationActivationManager, (PVOID *)&pManager);
 
-            WCHAR szName[PACKAGE_FULL_NAME_MAX_LENGTH] = {};
+            WCHAR szName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
             GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &((UINT32){PACKAGE_GRAPH_MIN_SIZE}),
-                                       (PWSTR[]){}, &((UINT32){PACKAGE_FULL_NAME_MAX_LENGTH}), szName);
+                                       (PWSTR[]){}, &((UINT32){sizeof(szName) / sizeof(WCHAR)}), szName);
 
             pSettings->lpVtbl->TerminateAllProcesses(pSettings, szName);
             pSettings->lpVtbl->DisableDebugging(pSettings, szName);
