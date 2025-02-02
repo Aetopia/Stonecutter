@@ -92,7 +92,7 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKN
 
 ATOM (*__RegisterClassExW__)(PWNDCLASSEXW) = {};
 
-ATOM _RegisterClassExW_(PWNDCLASSEXW _)
+ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
 {
     static BOOL fHook = {};
 
@@ -113,7 +113,7 @@ ATOM _RegisterClassExW_(PWNDCLASSEXW _)
         fHook = !pUnknown->lpVtbl->Release(pUnknown);
     }
 
-    return __RegisterClassExW__(_);
+    return __RegisterClassExW__(lpwcx);
 }
 
 BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID lpReserved)
