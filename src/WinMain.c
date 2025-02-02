@@ -21,8 +21,10 @@ VOID WinMainCRTStartup()
             DWORD dwProcessId = {}, dwThreadId = {};
 
             for (INT _ = {}; _ + 1 < nArgs; _++)
+
                 if (CompareStringOrdinal(L"-p", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
                     dwProcessId = StrToIntW(pArgs[++_]);
+                
                 else if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
                     dwThreadId = StrToIntW(pArgs[++_]);
 
