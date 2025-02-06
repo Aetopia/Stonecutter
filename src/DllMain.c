@@ -52,11 +52,12 @@ HRESULT _put_PointerCursor_(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This,
 }
 
 HRESULT(*__CreateSwapChainForCoreWindow__)
-(LPUNKNOWN, LPUNKNOWN, LPUNKNOWN, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN, LPUNKNOWN *) = {};
+(LPUNKNOWN, LPUNKNOWN, __x_ABI_CWindows_CUI_CCore_CICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
+ IDXGISwapChain1 **ppSwapChain) = {};
 
-HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKNOWN pWindow,
-                                       DXGI_SWAP_CHAIN_DESC1 *pDesc, LPUNKNOWN pRestrictToOutput,
-                                       LPUNKNOWN *ppSwapChain)
+HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice,
+                                       __x_ABI_CWindows_CUI_CCore_CICoreWindow *pWindow, DXGI_SWAP_CHAIN_DESC1 *pDesc,
+                                       LPUNKNOWN pRestrictToOutput, IDXGISwapChain1 **ppSwapChain)
 {
     if (fForce)
     {
@@ -73,18 +74,18 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, LPUNKN
 
     if (!fHook && !hResult)
     {
-        PVOID *pVtbl = *(PVOID **)*ppSwapChain, pTarget = pVtbl[8];
+        fHook = TRUE;
 
-        MH_CreateHook(pTarget, &_Present_, (PVOID *)&__Present__);
-        MH_QueueEnableHook(pTarget);
+        MH_CreateHook((*ppSwapChain)->lpVtbl->Present, &_Present_, (PVOID *)&__Present__);
+        MH_QueueEnableHook((*ppSwapChain)->lpVtbl->Present);
 
-        MH_CreateHook(pTarget = pVtbl[13], &_ResizeBuffers_, (PVOID *)&__ResizeBuffers__);
-        MH_QueueEnableHook(pTarget);
+        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers, &_ResizeBuffers_, (PVOID *)&__ResizeBuffers__);
+        MH_QueueEnableHook((*ppSwapChain)->lpVtbl->ResizeBuffers);
 
-        MH_CreateHook(pTarget = (*(PVOID **)pWindow)[15], &_put_PointerCursor_, (PVOID *)&__put_PointerCursor__);
-        MH_QueueEnableHook(pTarget);
+        MH_CreateHook(pWindow->lpVtbl->put_PointerCursor, &_put_PointerCursor_, (PVOID *)&__put_PointerCursor__);
+        MH_QueueEnableHook(pWindow->lpVtbl->put_PointerCursor);
 
-        fHook = !MH_ApplyQueued();
+        MH_ApplyQueued();
     }
 
     return hResult;
@@ -98,19 +99,20 @@ ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
 
     if (!fHook)
     {
+        fHook = TRUE;
+
         WCHAR szPath[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
         fForce = GetPrivateProfileIntW(L"Stonecutter", L"Force", FALSE, szPath) == TRUE;
 
-        LPUNKNOWN pUnknown = {};
-        CreateDXGIFactory(&IID_IDXGIFactory2, (PVOID *)&pUnknown);
+        IDXGIFactory2 *pFactory = {};
+        CreateDXGIFactory(&IID_IDXGIFactory2, (PVOID *)&pFactory);
 
-        PVOID pTarget = (*(PVOID **)pUnknown)[16];
+        MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow, &_CreateSwapChainForCoreWindow_,
+                      (PVOID *)&__CreateSwapChainForCoreWindow__);
+        MH_EnableHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow);
 
-        MH_CreateHook(pTarget, &_CreateSwapChainForCoreWindow_, (PVOID *)&__CreateSwapChainForCoreWindow__);
-        MH_EnableHook(pTarget);
-
-        fHook = !pUnknown->lpVtbl->Release(pUnknown);
+        pFactory->lpVtbl->Release(pFactory);
     }
 
     return __RegisterClassExW__(lpwcx);
