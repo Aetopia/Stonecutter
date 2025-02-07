@@ -118,7 +118,7 @@ ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
     return __RegisterClassExW__(lpwcx);
 }
 
-BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID lpReserved)
+BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
