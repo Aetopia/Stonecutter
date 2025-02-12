@@ -1,6 +1,6 @@
 #define COBJMACROS
-#define WIDL_C_INLINE_WRAPPERS
 #define _MINAPPMODEL_H_
+#define WIDL_C_INLINE_WRAPPERS
 
 #include <initguid.h>
 #include <aclapi.h>
