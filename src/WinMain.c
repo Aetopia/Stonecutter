@@ -1,4 +1,7 @@
+#define COBJMACROS
+#define WIDL_C_INLINE_WRAPPERS
 #define _MINAPPMODEL_H_
+
 #include <initguid.h>
 #include <aclapi.h>
 #include <shlwapi.h>
@@ -74,17 +77,17 @@ VOID WinMainCRTStartup()
             GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &(UINT32){PACKAGE_GRAPH_MIN_SIZE},
                                        &(PWSTR){}, &(UINT32){sizeof(szName) / sizeof(WCHAR)}, szName);
 
-            pSettings->lpVtbl->TerminateAllProcesses(pSettings, szName);
-            pSettings->lpVtbl->DisableDebugging(pSettings, szName);
-            pSettings->lpVtbl->EnableDebugging(pSettings, szName, szPath, NULL);
+            IPackageDebugSettings_TerminateAllProcesses(pSettings, szName);
+            IPackageDebugSettings_DisableDebugging(pSettings, szName);
+            IPackageDebugSettings_EnableDebugging(pSettings, szName, szPath, NULL);
 
-            pManager->lpVtbl->ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL,
-                                                  AO_NOERRORUI, &(DWORD){});
-            pSettings->lpVtbl->DisableDebugging(pSettings, szName);
-            pSettings->lpVtbl->EnableDebugging(pSettings, szName, NULL, NULL);
+            IApplicationActivationManager_ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
+                                                              NULL, AO_NOERRORUI, &(DWORD){});
+            IPackageDebugSettings_DisableDebugging(pSettings, szName);
+            IPackageDebugSettings_EnableDebugging(pSettings, szName, NULL, NULL);
 
-            pManager->lpVtbl->Release(pManager);
-            pSettings->lpVtbl->Release(pSettings);
+            IApplicationActivationManager_Release(pManager);
+            IPackageDebugSettings_Release(pSettings);
 
             CoUninitialize();
         }

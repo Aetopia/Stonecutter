@@ -1,3 +1,8 @@
+#define COBJMACROS
+#define WIDL_C_INLINE_WRAPPERS
+#define WIDL_using_Windows_UI_Core
+#define WIDL_using_Windows_Foundation
+
 #include <initguid.h>
 #include <d3d11.h>
 #include <MinHook.h>
@@ -23,48 +28,45 @@ HRESULT _ResizeBuffers_(LPUNKNOWN This, UINT BufferCount, UINT Width, UINT Heigh
 }
 
 HRESULT(*__put_PointerCursor__)
-(__x_ABI_CWindows_CUI_CCore_CICoreWindow *, __x_ABI_CWindows_CUI_CCore_CICoreCursor *) = {};
+(ICoreWindow *, ICoreCursor *) = {};
 
-HRESULT _put_PointerCursor_(__x_ABI_CWindows_CUI_CCore_CICoreWindow *This,
-                            __x_ABI_CWindows_CUI_CCore_CICoreCursor *value)
+HRESULT _put_PointerCursor_(ICoreWindow *This, ICoreCursor *value)
 {
-    __x_ABI_CWindows_CUI_CCore_CICoreCursor *pCursor = {};
-    This->lpVtbl->get_PointerCursor(This, &pCursor);
+    ICoreCursor *pCursor = {};
+    ICoreWindow_get_PointerCursor(This, &pCursor);
 
     if (pCursor)
-        pCursor->lpVtbl->Release(pCursor);
+        ICoreCursor_Release(pCursor);
     else
     {
-        __x_ABI_CWindows_CFoundation_CRect rcClient = {};
-        This->lpVtbl->get_Bounds(This, &rcClient);
+        Rect rcClient = {};
+        ICoreWindow_get_Bounds(This, &rcClient);
 
-        __x_ABI_CWindows_CUI_CCore_CICoreWindow2 *pWindow = {};
-        This->lpVtbl->QueryInterface(This, &IID___x_ABI_CWindows_CUI_CCore_CICoreWindow2, (PVOID *)&pWindow);
+        ICoreWindow2 *pWindow = {};
+        ICoreWindow_QueryInterface(This, &IID_ICoreWindow2, (PVOID *)&pWindow);
 
-        pWindow->lpVtbl->put_PointerPosition(
-            pWindow,
-            (__x_ABI_CWindows_CFoundation_CPoint){rcClient.X + rcClient.Width / 2, rcClient.Y + rcClient.Height / 2});
+        ICoreWindow2_put_PointerPosition(pWindow,
+                                         (Point){rcClient.X + rcClient.Width / 2, rcClient.Y + rcClient.Height / 2});
 
-        pWindow->lpVtbl->Release(pWindow);
+        ICoreWindow2_Release(pWindow);
     }
 
     return __put_PointerCursor__(This, value);
 }
 
 HRESULT(*__CreateSwapChainForCoreWindow__)
-(LPUNKNOWN, LPUNKNOWN, __x_ABI_CWindows_CUI_CCore_CICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
- IDXGISwapChain1 **ppSwapChain) = {};
+(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN, IDXGISwapChain1 **ppSwapChain) = {};
 
-HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice,
-                                       __x_ABI_CWindows_CUI_CCore_CICoreWindow *pWindow, DXGI_SWAP_CHAIN_DESC1 *pDesc,
-                                       LPUNKNOWN pRestrictToOutput, IDXGISwapChain1 **ppSwapChain)
+HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreWindow *pWindow,
+                                       DXGI_SWAP_CHAIN_DESC1 *pDesc, LPUNKNOWN pRestrictToOutput,
+                                       IDXGISwapChain1 **ppSwapChain)
 {
     if (fForce)
     {
         LPUNKNOWN pUnknown = {};
-        if (pDevice->lpVtbl->QueryInterface(pDevice, &IID_ID3D11Device, (PVOID *)&pUnknown))
+        if (IUnknown_QueryInterface(pDevice, &IID_ID3D11Device, (PVOID *)&pUnknown))
             return DXGI_ERROR_INVALID_CALL;
-        pUnknown->lpVtbl->Release(pUnknown);
+        IUnknown_Release(pUnknown);
     }
 
     pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
@@ -112,7 +114,7 @@ ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
                       (PVOID *)&__CreateSwapChainForCoreWindow__);
         MH_EnableHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow);
 
-        pFactory->lpVtbl->Release(pFactory);
+        IDXGIFactory2_Release(pFactory);
     }
 
     return __RegisterClassExW__(lpwcx);
