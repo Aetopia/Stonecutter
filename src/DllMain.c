@@ -27,8 +27,7 @@ HRESULT _ResizeBuffers_(LPUNKNOWN This, UINT BufferCount, UINT Width, UINT Heigh
     return __ResizeBuffers__(This, BufferCount, Width, Height, NewFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
 
-HRESULT(*__put_PointerCursor__)
-(ICoreWindow *, ICoreCursor *) = {};
+HRESULT (*__put_PointerCursor__)(ICoreWindow *, ICoreCursor *) = {};
 
 HRESULT _put_PointerCursor_(ICoreWindow *This, ICoreCursor *value)
 {
@@ -54,8 +53,8 @@ HRESULT _put_PointerCursor_(ICoreWindow *This, ICoreCursor *value)
     return __put_PointerCursor__(This, value);
 }
 
-HRESULT(*__CreateSwapChainForCoreWindow__)
-(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN, IDXGISwapChain1 **ppSwapChain) = {};
+HRESULT (*__CreateSwapChainForCoreWindow__)(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
+                                            IDXGISwapChain1 **ppSwapChain) = {};
 
 HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreWindow *pWindow,
                                        DXGI_SWAP_CHAIN_DESC1 *pDesc, LPUNKNOWN pRestrictToOutput,
