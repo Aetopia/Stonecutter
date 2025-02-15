@@ -43,7 +43,6 @@ VOID WinMainCRTStartup()
                                                              .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
                                                              .ptstrName = L"ALL APPLICATION PACKAGES"}},
                              NULL, &pAcl);
-
             SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
 
             HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
