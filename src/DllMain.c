@@ -1,9 +1,9 @@
+#define INITGUID
 #define COBJMACROS
 #define WIDL_C_INLINE_WRAPPERS
 #define WIDL_using_Windows_UI_Core
 #define WIDL_using_Windows_Foundation
 
-#include <initguid.h>
 #include <d3d11.h>
 #include <MinHook.h>
 #include <dxgi1_2.h>

@@ -1,8 +1,8 @@
+#define INITGUID
 #define COBJMACROS
 #define _MINAPPMODEL_H_
 #define WIDL_C_INLINE_WRAPPERS
 
-#include <initguid.h>
 #include <aclapi.h>
 #include <shlwapi.h>
 #include <appmodel.h>
