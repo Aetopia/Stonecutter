@@ -63,8 +63,10 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
     if (fForce)
     {
         LPUNKNOWN pUnknown = {};
+
         if (IUnknown_QueryInterface(pDevice, &IID_ID3D11Device, (PVOID *)&pUnknown))
             return DXGI_ERROR_INVALID_CALL;
+
         IUnknown_Release(pUnknown);
     }
 
@@ -104,6 +106,7 @@ ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
 
         WCHAR szPath[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
+        
         fForce = GetPrivateProfileIntW(L"Stonecutter", L"Force", FALSE, szPath) == TRUE;
 
         IDXGIFactory2 *pFactory = {};
