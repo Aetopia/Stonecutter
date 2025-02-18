@@ -68,12 +68,12 @@ VOID WinMainCRTStartup()
             PSID pSid = {};
             DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
 
-            WCHAR szName[MAX_PATH] = {};
-            GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szName, &((ULONG){MAX_PATH}));
+            WCHAR szMutex[MAX_PATH] = {};
+            GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szMutex, &((ULONG){MAX_PATH}));
 
             LocalFree(pSid);
 
-            HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
+            HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szMutex, L"\\Stonecutter"));
             BOOL fFlag = hMutex && GetLastError();
             CloseHandle(hMutex);
 
@@ -92,18 +92,18 @@ VOID WinMainCRTStartup()
                 CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
                                  &IID_IApplicationActivationManager, (PVOID *)&pManager);
 
-                WCHAR szName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
+                WCHAR szPackage[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
                 GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &(UINT32){PACKAGE_GRAPH_MIN_SIZE},
-                                           &(PWSTR){}, &(UINT32){sizeof(szName) / sizeof(WCHAR)}, szName);
+                                           &(PWSTR){}, &(UINT32){PACKAGE_FULL_NAME_MAX_LENGTH + 1}, szPackage);
 
-                IPackageDebugSettings_TerminateAllProcesses(pSettings, szName);
-                IPackageDebugSettings_DisableDebugging(pSettings, szName);
-                IPackageDebugSettings_EnableDebugging(pSettings, szName, szPath, NULL);
+                IPackageDebugSettings_TerminateAllProcesses(pSettings, szPackage);
+                IPackageDebugSettings_DisableDebugging(pSettings, szPackage);
+                IPackageDebugSettings_EnableDebugging(pSettings, szPackage, szPath, NULL);
 
                 IApplicationActivationManager_ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
                                                                   NULL, AO_NOERRORUI, &(DWORD){});
-                IPackageDebugSettings_DisableDebugging(pSettings, szName);
-                IPackageDebugSettings_EnableDebugging(pSettings, szName, NULL, NULL);
+                IPackageDebugSettings_DisableDebugging(pSettings, szPackage);
+                IPackageDebugSettings_EnableDebugging(pSettings, szPackage, NULL, NULL);
 
                 IApplicationActivationManager_Release(pManager);
                 IPackageDebugSettings_Release(pSettings);
