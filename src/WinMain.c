@@ -5,6 +5,7 @@
 
 #include <aclapi.h>
 #include <shlwapi.h>
+#include <userenv.h>
 #include <appmodel.h>
 #include <shobjidl.h>
 
@@ -64,33 +65,51 @@ VOID WinMainCRTStartup()
         }
         else
         {
-            CoInitialize(NULL);
+            PSID pSid = {};
+            DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
 
-            IPackageDebugSettings *pSettings = {};
-            CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
-                             (PVOID *)&pSettings);
+            WCHAR szName[MAX_PATH] = {};
+            GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szName, &((ULONG){MAX_PATH}));
 
-            IApplicationActivationManager *pManager = {};
-            CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
-                             &IID_IApplicationActivationManager, (PVOID *)&pManager);
+            LocalFree(pSid);
 
-            WCHAR szName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
-            GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &(UINT32){PACKAGE_GRAPH_MIN_SIZE},
-                                       &(PWSTR){}, &(UINT32){sizeof(szName) / sizeof(WCHAR)}, szName);
+            HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szName, L"\\Stonecutter"));
+            BOOL fFlag = hMutex && GetLastError();
+            CloseHandle(hMutex);
 
-            IPackageDebugSettings_TerminateAllProcesses(pSettings, szName);
-            IPackageDebugSettings_DisableDebugging(pSettings, szName);
-            IPackageDebugSettings_EnableDebugging(pSettings, szName, szPath, NULL);
+            if (fFlag)
+                ShellExecuteW(NULL, NULL, L"shell:AppsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, NULL,
+                              SW_HIDE);
+            else
+            {
+                CoInitialize(NULL);
 
-            IApplicationActivationManager_ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
-                                                              NULL, AO_NOERRORUI, &(DWORD){});
-            IPackageDebugSettings_DisableDebugging(pSettings, szName);
-            IPackageDebugSettings_EnableDebugging(pSettings, szName, NULL, NULL);
+                IPackageDebugSettings *pSettings = {};
+                CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
+                                 (PVOID *)&pSettings);
 
-            IApplicationActivationManager_Release(pManager);
-            IPackageDebugSettings_Release(pSettings);
+                IApplicationActivationManager *pManager = {};
+                CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
+                                 &IID_IApplicationActivationManager, (PVOID *)&pManager);
 
-            CoUninitialize();
+                WCHAR szName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
+                GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &(UINT32){PACKAGE_GRAPH_MIN_SIZE},
+                                           &(PWSTR){}, &(UINT32){sizeof(szName) / sizeof(WCHAR)}, szName);
+
+                IPackageDebugSettings_TerminateAllProcesses(pSettings, szName);
+                IPackageDebugSettings_DisableDebugging(pSettings, szName);
+                IPackageDebugSettings_EnableDebugging(pSettings, szName, szPath, NULL);
+
+                IApplicationActivationManager_ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
+                                                                  NULL, AO_NOERRORUI, &(DWORD){});
+                IPackageDebugSettings_DisableDebugging(pSettings, szName);
+                IPackageDebugSettings_EnableDebugging(pSettings, szName, NULL, NULL);
+
+                IApplicationActivationManager_Release(pManager);
+                IPackageDebugSettings_Release(pSettings);
+
+                CoUninitialize();
+            }
         }
     }
 

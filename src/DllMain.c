@@ -106,7 +106,7 @@ ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
 
         WCHAR szPath[MAX_PATH] = {};
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
-        
+
         fForce = GetPrivateProfileIntW(L"Stonecutter", L"Force", FALSE, szPath) == TRUE;
 
         IDXGIFactory2 *pFactory = {};
@@ -128,6 +128,13 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
     {
         if (GetCurrentPackageFamilyName(&(UINT32){}, NULL) != ERROR_INSUFFICIENT_BUFFER)
             return FALSE;
+
+        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
+        if (!hMutex || GetLastError())
+        {
+            CloseHandle(hMutex);
+            return FALSE;
+        }
 
         DisableThreadLibraryCalls(hInstance);
 
