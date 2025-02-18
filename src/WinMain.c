@@ -11,15 +11,59 @@
 
 VOID WinMainCRTStartup()
 {
+    WCHAR szPath[MAX_PATH] = {};
+    QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &(DWORD){MAX_PATH});
+
     HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
-    BOOL fFlag = !GetLastError();
 
     if (hMutex)
     {
-        WCHAR szPath[MAX_PATH] = {};
-        QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &(DWORD){MAX_PATH});
+        if (GetLastError())
+        {
+            INT nArgs = {};
+            PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+            DWORD dwProcessId = {}, dwThreadId = {};
 
-        if (fFlag)
+            for (INT _ = {}; _ + 1 < nArgs; _++)
+                if (CompareStringOrdinal(L"-p", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
+                    dwProcessId = StrToIntW(pArgs[++_]);
+                else if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
+                    dwThreadId = StrToIntW(pArgs[++_]);
+
+            LocalFree(pArgs);
+
+            PathRenameExtensionW(szPath, L".dll");
+
+            PACL pAcl = {};
+
+            SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
+                             &(EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
+                                                 .grfAccessMode = SET_ACCESS,
+                                                 .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+                                                 .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
+                                                             .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
+                                                             .ptstrName = L"ALL APPLICATION PACKAGES"}},
+                             NULL, &pAcl);
+            SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
+
+            HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
+
+            PVOID pAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+            WriteProcessMemory(hProcess, pAddress, szPath, sizeof(szPath), NULL);
+
+            HANDLE hThread =
+                CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (PTHREAD_START_ROUTINE)LoadLibraryW, pAddress, 0, NULL);
+            WaitForSingleObject(hThread, INFINITE);
+
+            VirtualFreeEx(hProcess, pAddress, (SIZE_T){}, MEM_RELEASE);
+            CloseHandle(hThread);
+            CloseHandle(hProcess);
+
+            hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, dwThreadId);
+            ResumeThread(hThread);
+            CloseHandle(hThread);
+        }
+        else
         {
             PSID pSid = {};
             DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
@@ -66,51 +110,6 @@ VOID WinMainCRTStartup()
 
                 CoUninitialize();
             }
-        }
-        else
-        {
-            INT nArgs = {};
-            PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
-            DWORD dwProcessId = {}, dwThreadId = {};
-
-            for (INT _ = {}; _ + 1 < nArgs; _++)
-                if (CompareStringOrdinal(L"-p", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
-                    dwProcessId = StrToIntW(pArgs[++_]);
-                else if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
-                    dwThreadId = StrToIntW(pArgs[++_]);
-
-            LocalFree(pArgs);
-
-            PathRenameExtensionW(szPath, L".dll");
-
-            PACL pAcl = {};
-
-            SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
-                             &(EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
-                                                 .grfAccessMode = SET_ACCESS,
-                                                 .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
-                                                 .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
-                                                             .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
-                                                             .ptstrName = L"ALL APPLICATION PACKAGES"}},
-                             NULL, &pAcl);
-            SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
-
-            HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
-
-            PVOID pAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-            WriteProcessMemory(hProcess, pAddress, szPath, sizeof(szPath), NULL);
-
-            HANDLE hThread =
-                CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (PTHREAD_START_ROUTINE)LoadLibraryW, pAddress, 0, NULL);
-            WaitForSingleObject(hThread, INFINITE);
-
-            VirtualFreeEx(hProcess, pAddress, (SIZE_T){}, MEM_RELEASE);
-            CloseHandle(hThread);
-            CloseHandle(hProcess);
-
-            hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, dwThreadId);
-            ResumeThread(hThread);
-            CloseHandle(hThread);
         }
     }
 
