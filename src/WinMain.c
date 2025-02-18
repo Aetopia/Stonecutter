@@ -114,6 +114,5 @@ VOID WinMainCRTStartup()
     }
 
     CloseHandle(hMutex);
-
     ExitProcess(EXIT_SUCCESS);
 }
