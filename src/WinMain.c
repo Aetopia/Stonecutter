@@ -51,8 +51,8 @@ VOID WinMainCRTStartup()
             PVOID pAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
             WriteProcessMemory(hProcess, pAddress, szPath, sizeof(szPath), NULL);
 
-            HANDLE hThread =
-                CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (PTHREAD_START_ROUTINE)LoadLibraryW, pAddress, 0, NULL);
+            HANDLE hThread = CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (PTHREAD_START_ROUTINE)LoadLibraryW,
+                                                pAddress, (DWORD){}, NULL);
             WaitForSingleObject(hThread, INFINITE);
 
             VirtualFreeEx(hProcess, pAddress, (SIZE_T){}, MEM_RELEASE);
