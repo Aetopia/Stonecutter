@@ -22,8 +22,8 @@ VOID WinMainCRTStartup()
         {
             INT nArgs = {};
             PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
-            DWORD dwProcessId = {}, dwThreadId = {};
 
+            DWORD dwProcessId = {}, dwThreadId = {};
             for (INT _ = {}; _ + 1 < nArgs; _++)
                 if (CompareStringOrdinal(L"-p", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
                     dwProcessId = StrToIntW(pArgs[++_]);
@@ -32,10 +32,9 @@ VOID WinMainCRTStartup()
 
             LocalFree(pArgs);
 
-            PathRenameExtensionW(szPath, L".dll");
-
             PACL pAcl = {};
 
+            PathRenameExtensionW(szPath, L".dll");
             SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
                              &(EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
                                                  .grfAccessMode = SET_ACCESS,
