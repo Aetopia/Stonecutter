@@ -4,7 +4,7 @@ rmdir /Q /S "bin">nul 2>&1
 mkdir "bin">nul 2>&1
 
 windres.exe -i "Resources\DllMain.rc" -o "%TEMP%\.o"
-gcc.exe -Os -Wl,--gc-sections -shared -nostdlib -static -s "DllMain.c" "%TEMP%\.o" -lMinHook -lKernel32 -lucrtbase -lUser32 -lDXGI -o "bin\Stonecutter.dll"
+gcc.exe -Os -Wl,--gc-sections -fvisibility=hidden -flto -shared -nostdlib -static -s "DllMain.c" "%TEMP%\.o" -lMinHook -lKernel32 -lucrtbase -lUser32 -lDXGI -o "bin\Stonecutter.dll"
 
 windres.exe -i "Resources\WinMain.rc" -o "%TEMP%\.o"
 gcc.exe -Os -Wl,--gc-sections -mwindows -nostdlib -s "WinMain.c" "%TEMP%\.o" -lUserenv -lShell32 -lShlwapi -lOle32 -lKernel32 -lAdvapi32 -o "bin\Stonecutter.exe"
