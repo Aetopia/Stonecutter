@@ -27,9 +27,9 @@ HRESULT _ResizeBuffers_(LPUNKNOWN This, UINT BufferCount, UINT Width, UINT Heigh
     return __ResizeBuffers__(This, BufferCount, Width, Height, NewFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
 
-HRESULT (*__put_PointerCursor__)(ICoreWindow *, ICoreCursor *) = {};
+HRESULT (*__put_PointerCursor__)(ICoreWindow *, LPUNKNOWN) = {};
 
-HRESULT _put_PointerCursor_(ICoreWindow *This, ICoreCursor *value)
+HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
 {
     ICoreCursor *pCursor = {};
     ICoreWindow_get_PointerCursor(This, &pCursor);
