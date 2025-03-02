@@ -34,9 +34,7 @@ HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
     ICoreCursor *pCursor = {};
     ICoreWindow_get_PointerCursor(This, &pCursor);
 
-    if (pCursor)
-        ICoreCursor_Release(pCursor);
-    else
+    if (!pCursor || !value)
     {
         Rect rcClient = {};
         ICoreWindow_get_Bounds(This, &rcClient);
@@ -49,6 +47,9 @@ HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
 
         ICoreWindow2_Release(pWindow);
     }
+
+    if (pCursor)
+        ICoreCursor_Release(pCursor);
 
     return __put_PointerCursor__(This, value);
 }
