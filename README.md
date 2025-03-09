@@ -64,8 +64,9 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 
 - Launch Minecraft: Bedrock Edition via Stonecutter.
 
-## Building
+## Build
 1. Install [MSYS2](https://www.msys2.org/) & [UPX](https://upx.github.io/) for optional compression.
+
 2. Update the MSYS2 Environment until there are no pending updates using:
 
     ```bash
@@ -79,4 +80,5 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
     ```
 
 3. Make sure `<MSYS2 Installation Directory>\ucrt64\bin` is added to the Windows `PATH` environment variable.
+
 4. Run [`Build.cmd`](src/Build.cmd).
