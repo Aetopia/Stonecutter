@@ -34,7 +34,12 @@ HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
     ICoreCursor *pCursor = {};
     ICoreWindow_get_PointerCursor(This, &pCursor);
 
-    if (!pCursor || !value)
+    if (pCursor)
+        ICoreCursor_Release(pCursor);
+
+    HRESULT hResult = __put_PointerCursor__(This, value);
+
+    if (!hResult && (!pCursor || !value))
     {
         Rect rcClient = {};
         ICoreWindow_get_Bounds(This, &rcClient);
@@ -48,10 +53,7 @@ HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
         ICoreWindow2_Release(pWindow);
     }
 
-    if (pCursor)
-        ICoreCursor_Release(pCursor);
-
-    return __put_PointerCursor__(This, value);
+    return hResult;
 }
 
 HRESULT (*__CreateSwapChainForCoreWindow__)(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
