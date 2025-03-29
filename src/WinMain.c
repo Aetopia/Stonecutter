@@ -56,7 +56,9 @@ VOID WinMainCRTStartup()
         else
         {
             PSID pSid = {};
-            WCHAR szMutex[MAX_PATH] = {};
+            IPackageDebugSettings *pSettings = {};
+            IApplicationActivationManager *pManager = {};
+            WCHAR szMutex[MAX_PATH] = {}, szPackage[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
 
             DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
             GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szMutex, &((ULONG){MAX_PATH}));
@@ -66,36 +68,34 @@ VOID WinMainCRTStartup()
             BOOL fFlag = hMutex && GetLastError();
             CloseHandle(hMutex);
 
-            if (fFlag)
-                ShellExecuteW(NULL, NULL, L"shell:AppsFolder\\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App", NULL, NULL,
-                              SW_HIDE);
-            else
-            {
-                IPackageDebugSettings *pSettings = {};
-                IApplicationActivationManager *pManager = {};
-                WCHAR szPackage[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
+            CoInitialize(NULL);
+            CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
+                             &IID_IApplicationActivationManager, (PVOID *)&pManager);
 
-                CoInitialize(NULL);
+            if (!fFlag)
+            {
                 CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                                  (PVOID *)&pSettings);
-                CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
-                                 &IID_IApplicationActivationManager, (PVOID *)&pManager);
                 GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &(UINT32){PACKAGE_GRAPH_MIN_SIZE},
                                            &(PWSTR){}, &(UINT32){PACKAGE_FULL_NAME_MAX_LENGTH + 1}, szPackage);
 
                 IPackageDebugSettings_TerminateAllProcesses(pSettings, szPackage);
                 IPackageDebugSettings_DisableDebugging(pSettings, szPackage);
                 IPackageDebugSettings_EnableDebugging(pSettings, szPackage, szPath, NULL);
+            }
 
-                IApplicationActivationManager_ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
-                                                                  NULL, AO_NOERRORUI, &(DWORD){});
+            IApplicationActivationManager_ActivateApplication(pManager, L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
+                                                              NULL, AO_NOERRORUI, &(DWORD){});
+
+            if (!fFlag)
+            {
                 IPackageDebugSettings_DisableDebugging(pSettings, szPackage);
                 IPackageDebugSettings_EnableDebugging(pSettings, szPackage, NULL, NULL);
-
-                IApplicationActivationManager_Release(pManager);
                 IPackageDebugSettings_Release(pSettings);
-                CoUninitialize();
             }
+
+            IApplicationActivationManager_Release(pManager);
+            CoUninitialize();
         }
     }
 
