@@ -15,7 +15,6 @@ VOID WinMainCRTStartup()
     QueryFullProcessImageNameW(GetCurrentProcess(), (DWORD){}, szPath, &(DWORD){MAX_PATH});
 
     HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
-
     if (hMutex)
     {
         if (GetLastError())
@@ -23,55 +22,44 @@ VOID WinMainCRTStartup()
             INT nArgs = {};
             PWSTR *pArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
 
-            DWORD dwProcessId = {}, dwThreadId = {};
             for (INT _ = {}; _ + 1 < nArgs; _++)
-                if (CompareStringOrdinal(L"-p", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
-                    dwProcessId = StrToIntW(pArgs[++_]);
-                else if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
-                    dwThreadId = StrToIntW(pArgs[++_]);
+                if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
+                {
+                    PACL pAcl = {};
+                    HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, StrToIntW(pArgs[++_]));
+                    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetProcessIdOfThread(hThread));
+                    PVOID pAddress =
+                        VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+
+                    PathRenameExtensionW(szPath, L".dll");
+                    SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
+                                     &(EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
+                                                         .grfAccessMode = SET_ACCESS,
+                                                         .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+                                                         .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
+                                                                     .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
+                                                                     .ptstrName = L"ALL APPLICATION PACKAGES"}},
+                                     NULL, &pAcl);
+                    SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
+
+                    WriteProcessMemory(hProcess, pAddress, szPath, sizeof(szPath), NULL);
+                    QueueUserAPC((PAPCFUNC)LoadLibraryW, hThread, (ULONG_PTR)pAddress);
+
+                    ResumeThread(hThread);
+                    CloseHandle(hThread);
+                    CloseHandle(hProcess);
+                    break;
+                }
 
             LocalFree(pArgs);
-
-            PACL pAcl = {};
-
-            PathRenameExtensionW(szPath, L".dll");
-
-            SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
-                             &(EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
-                                                 .grfAccessMode = SET_ACCESS,
-                                                 .grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT,
-                                                 .Trustee = {.TrusteeForm = TRUSTEE_IS_NAME,
-                                                             .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
-                                                             .ptstrName = L"ALL APPLICATION PACKAGES"}},
-                             NULL, &pAcl);
-                             
-            SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
-
-            HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
-
-            PVOID pAddress = VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-            WriteProcessMemory(hProcess, pAddress, szPath, sizeof(szPath), NULL);
-
-            HANDLE hThread = CreateRemoteThread(hProcess, NULL, (SIZE_T){}, (PTHREAD_START_ROUTINE)LoadLibraryW,
-                                                pAddress, (DWORD){}, NULL);
-            WaitForSingleObject(hThread, INFINITE);
-
-            VirtualFreeEx(hProcess, pAddress, (SIZE_T){}, MEM_RELEASE);
-            CloseHandle(hThread);
-            CloseHandle(hProcess);
-
-            hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, dwThreadId);
-            ResumeThread(hThread);
-            CloseHandle(hThread);
         }
         else
         {
             PSID pSid = {};
-            DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
-
             WCHAR szMutex[MAX_PATH] = {};
-            GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szMutex, &((ULONG){MAX_PATH}));
 
+            DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
+            GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szMutex, &((ULONG){MAX_PATH}));
             LocalFree(pSid);
 
             HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szMutex, L"\\Stonecutter"));
@@ -83,17 +71,15 @@ VOID WinMainCRTStartup()
                               SW_HIDE);
             else
             {
-                CoInitialize(NULL);
-
                 IPackageDebugSettings *pSettings = {};
+                IApplicationActivationManager *pManager = {};
+                WCHAR szPackage[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
+
+                CoInitialize(NULL);
                 CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                                  (PVOID *)&pSettings);
-
-                IApplicationActivationManager *pManager = {};
                 CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
                                  &IID_IApplicationActivationManager, (PVOID *)&pManager);
-
-                WCHAR szPackage[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
                 GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &(UINT32){PACKAGE_GRAPH_MIN_SIZE},
                                            &(PWSTR){}, &(UINT32){PACKAGE_FULL_NAME_MAX_LENGTH + 1}, szPackage);
 
@@ -108,7 +94,6 @@ VOID WinMainCRTStartup()
 
                 IApplicationActivationManager_Release(pManager);
                 IPackageDebugSettings_Release(pSettings);
-
                 CoUninitialize();
             }
         }

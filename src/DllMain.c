@@ -11,23 +11,23 @@
 #include <windows.ui.core.h>
 
 BOOL fForce = {};
-
+ATOM (*__RegisterClassExW__)(PWNDCLASSEXW) = {};
 HRESULT (*__Present__)(LPUNKNOWN, UINT, UINT) = {};
+HRESULT (*__put_PointerCursor__)(ICoreWindow *, LPUNKNOWN) = {};
+HRESULT (*__ResizeBuffers__)(LPUNKNOWN, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
+HRESULT (*__CreateSwapChainForCoreWindow__)(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
+                                            IDXGISwapChain1 **ppSwapChain) = {};
 
 HRESULT _Present_(LPUNKNOWN This, UINT SyncInterval, UINT Flags)
 {
     return __Present__(This, SyncInterval, SyncInterval ? Flags : DXGI_PRESENT_ALLOW_TEARING);
 }
 
-HRESULT (*__ResizeBuffers__)(LPUNKNOWN, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
-
 HRESULT _ResizeBuffers_(LPUNKNOWN This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
                         UINT SwapChainFlags)
 {
     return __ResizeBuffers__(This, BufferCount, Width, Height, NewFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
-
-HRESULT (*__put_PointerCursor__)(ICoreWindow *, LPUNKNOWN) = {};
 
 HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
 {
@@ -37,25 +37,20 @@ HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
     if (!pCursor || !value)
     {
         Rect rcClient = {};
-        ICoreWindow_get_Bounds(This, &rcClient);
-
         ICoreWindow2 *pWindow = {};
+
+        ICoreWindow_get_Bounds(This, &rcClient);
         ICoreWindow_QueryInterface(This, &IID_ICoreWindow2, (PVOID *)&pWindow);
 
         ICoreWindow2_put_PointerPosition(pWindow,
                                          (Point){rcClient.X + rcClient.Width / 2, rcClient.Y + rcClient.Height / 2});
-
         ICoreWindow2_Release(pWindow);
     }
 
     if (pCursor)
         ICoreCursor_Release(pCursor);
-
     return __put_PointerCursor__(This, value);
 }
-
-HRESULT (*__CreateSwapChainForCoreWindow__)(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
-                                            IDXGISwapChain1 **ppSwapChain) = {};
 
 HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreWindow *pWindow,
                                        DXGI_SWAP_CHAIN_DESC1 *pDesc, LPUNKNOWN pRestrictToOutput,
@@ -64,10 +59,8 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
     if (fForce)
     {
         LPUNKNOWN pUnknown = {};
-
         if (IUnknown_QueryInterface(pDevice, &IID_ID3D11Device, (PVOID *)&pUnknown))
             return DXGI_ERROR_INVALID_CALL;
-
         IUnknown_Release(pUnknown);
     }
 
@@ -95,8 +88,6 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
     return hResult;
 }
 
-ATOM (*__RegisterClassExW__)(PWNDCLASSEXW) = {};
-
 ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
 {
     static BOOL fHook = {};
@@ -106,11 +97,11 @@ ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
         fHook = TRUE;
 
         WCHAR szPath[MAX_PATH] = {};
-        ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
+        IDXGIFactory2 *pFactory = {};
 
+        ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
         fForce = GetPrivateProfileIntW(L"Stonecutter", L"Force", FALSE, szPath) == TRUE;
 
-        IDXGIFactory2 *pFactory = {};
         CreateDXGIFactory(&IID_IDXGIFactory2, (PVOID *)&pFactory);
 
         MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow, &_CreateSwapChainForCoreWindow_,
@@ -127,6 +118,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
+        DisableThreadLibraryCalls(hInstance);
         if (GetCurrentPackageFamilyName(&(UINT32){}, NULL) != ERROR_INSUFFICIENT_BUFFER)
             return FALSE;
 
@@ -137,10 +129,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
             return FALSE;
         }
 
-        DisableThreadLibraryCalls(hInstance);
-
         MH_Initialize();
-
         MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (PVOID *)&__RegisterClassExW__);
         MH_EnableHook(RegisterClassExW);
     }
