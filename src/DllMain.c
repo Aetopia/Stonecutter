@@ -49,6 +49,7 @@ HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
 
     if (pCursor)
         ICoreCursor_Release(pCursor);
+
     return __put_PointerCursor__(This, value);
 }
 
@@ -59,8 +60,10 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
     if (fForce)
     {
         LPUNKNOWN pUnknown = {};
+
         if (IUnknown_QueryInterface(pDevice, &IID_ID3D11Device, (PVOID *)&pUnknown))
             return DXGI_ERROR_INVALID_CALL;
+
         IUnknown_Release(pUnknown);
     }
 
@@ -119,10 +122,12 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
     if (dwReason == DLL_PROCESS_ATTACH)
     {
         DisableThreadLibraryCalls(hInstance);
+
         if (GetCurrentPackageFamilyName(&(UINT32){}, NULL) != ERROR_INSUFFICIENT_BUFFER)
             return FALSE;
 
         HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
+
         if (!hMutex || GetLastError())
         {
             CloseHandle(hMutex);
@@ -130,6 +135,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
         }
 
         MH_Initialize();
+
         MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (PVOID *)&__RegisterClassExW__);
         MH_EnableHook(RegisterClassExW);
     }
