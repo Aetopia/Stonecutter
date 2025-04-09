@@ -13,12 +13,10 @@ VOID WinMainCRTStartup()
 {
     WCHAR szPath[MAX_PATH] = {};
     GetModuleFileNameW(NULL, szPath, MAX_PATH);
-   
     if (GetLastError())
         ExitProcess(EXIT_SUCCESS);
 
     HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
-   
     if (!hMutex)
         ExitProcess(EXIT_SUCCESS);
 
@@ -74,7 +72,6 @@ VOID WinMainCRTStartup()
         CloseHandle(hMutex);
 
         CoInitialize(NULL);
-
         CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
                          &IID_IApplicationActivationManager, (PVOID *)&pManager);
 
@@ -82,7 +79,6 @@ VOID WinMainCRTStartup()
         {
             CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                              (PVOID *)&pSettings);
-
             GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &(UINT32){PACKAGE_GRAPH_MIN_SIZE},
                                        &(PWSTR){}, &(UINT32){PACKAGE_FULL_NAME_MAX_LENGTH + 1}, szPackage);
 

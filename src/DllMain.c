@@ -63,13 +63,13 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
                                        DXGI_SWAP_CHAIN_DESC1 *pDesc, LPUNKNOWN pRestrictToOutput,
                                        IDXGISwapChain1 **ppSwapChain)
 {
+    static BOOL fHook = {};
+
     if (fForce)
     {
         LPUNKNOWN pUnknown = {};
-
         if (IUnknown_QueryInterface(pDevice, &IID_ID3D11Device, (PVOID *)&pUnknown))
             return DXGI_ERROR_INVALID_CALL;
-
         IUnknown_Release(pUnknown);
     }
 
@@ -77,8 +77,6 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
         pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
     HRESULT hResult = __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
-
-    static BOOL fHook = {};
 
     if (!fHook)
     {
@@ -118,12 +116,11 @@ ATOM _RegisterClassExW_(PVOID lpwcx)
         fForce = GetPrivateProfileIntW(L"Stonecutter", L"Force", FALSE, szPath) == TRUE;
 
         CreateDXGIFactory2((UINT){}, &IID_IDXGIFactory5, (PVOID *)&pFactory);
-
         IDXGIFactory5_CheckFeatureSupport(pFactory, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &fFeature, sizeof(BOOL));
 
-        MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow, &_CreateSwapChainForCoreWindow_,
-                      (PVOID *)&__CreateSwapChainForCoreWindow__);
-        MH_EnableHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow);
+        PVOID pTarget = pFactory->lpVtbl->CreateSwapChainForCoreWindow;
+        MH_CreateHook(pTarget, &_CreateSwapChainForCoreWindow_, (PVOID *)&__CreateSwapChainForCoreWindow__);
+        MH_EnableHook(pTarget);
 
         IDXGIFactory5_Release(pFactory);
     }
@@ -136,12 +133,10 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
     if (dwReason == DLL_PROCESS_ATTACH)
     {
         DisableThreadLibraryCalls(hInstance);
-
         if (GetCurrentPackageFamilyName(&(UINT32){}, NULL) != ERROR_INSUFFICIENT_BUFFER)
             return FALSE;
 
         HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
-
         if (!hMutex || GetLastError())
         {
             CloseHandle(hMutex);
@@ -149,7 +144,6 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
         }
 
         MH_Initialize();
-
         MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (PVOID *)&__RegisterClassExW__);
         MH_EnableHook(RegisterClassExW);
     }
