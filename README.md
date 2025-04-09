@@ -35,6 +35,9 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 
 #### How can I disable V-Sync?
 
+> [!CAUTION]
+> [Stonecutter might not be able to disable V-Sync if your system doesn't support screen tearing.](https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/variable-refresh-rate-displays)
+
 - Open the following file:
   ```
   %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftpe\options.txt
