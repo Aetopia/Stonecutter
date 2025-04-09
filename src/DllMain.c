@@ -84,14 +84,17 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
     {
         fHook = TRUE;
 
-        MH_CreateHook((*ppSwapChain)->lpVtbl->Present, &_Present_, (PVOID *)&__Present__);
-        MH_QueueEnableHook((*ppSwapChain)->lpVtbl->Present);
+        PVOID pTarget = (*ppSwapChain)->lpVtbl->Present;
 
-        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers, &_ResizeBuffers_, (PVOID *)&__ResizeBuffers__);
-        MH_QueueEnableHook((*ppSwapChain)->lpVtbl->ResizeBuffers);
+        MH_CreateHook(pTarget, &_Present_, (PVOID *)&__Present__);
+        MH_QueueEnableHook(pTarget);
 
-        MH_CreateHook(pWindow->lpVtbl->put_PointerCursor, &_put_PointerCursor_, (PVOID *)&__put_PointerCursor__);
-        MH_QueueEnableHook(pWindow->lpVtbl->put_PointerCursor);
+        MH_CreateHook(pTarget = (*ppSwapChain)->lpVtbl->ResizeBuffers, &_ResizeBuffers_, (PVOID *)&__ResizeBuffers__);
+        MH_QueueEnableHook(pTarget);
+
+        MH_CreateHook(pTarget = pWindow->lpVtbl->put_PointerCursor, &_put_PointerCursor_,
+                      (PVOID *)&__put_PointerCursor__);
+        MH_QueueEnableHook(pTarget);
 
         MH_ApplyQueued();
     }
