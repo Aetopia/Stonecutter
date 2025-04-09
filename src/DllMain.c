@@ -84,12 +84,13 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
     {
         fHook = TRUE;
 
-        PVOID pTarget = (*ppSwapChain)->lpVtbl->Present;
+        IDXGISwapChain1Vtbl *pVtbl = (*ppSwapChain)->lpVtbl;
+        PVOID pTarget = pVtbl->Present;
 
         MH_CreateHook(pTarget, &_Present_, (PVOID *)&__Present__);
         MH_QueueEnableHook(pTarget);
 
-        MH_CreateHook(pTarget = (*ppSwapChain)->lpVtbl->ResizeBuffers, &_ResizeBuffers_, (PVOID *)&__ResizeBuffers__);
+        MH_CreateHook(pTarget = pVtbl->ResizeBuffers, &_ResizeBuffers_, (PVOID *)&__ResizeBuffers__);
         MH_QueueEnableHook(pTarget);
 
         MH_CreateHook(pTarget = pWindow->lpVtbl->put_PointerCursor, &_put_PointerCursor_,
