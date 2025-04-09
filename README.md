@@ -36,7 +36,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 #### How can I disable V-Sync?
 
 > [!CAUTION]
-> [Stonecutter might not be able to disable V-Sync if your system doesn't support screen tearing.](https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/variable-refresh-rate-displays)
+> **V-Sync might not be disabled if your system doesn't support screen tearing.**
 
 - Open the following file:
   ```
@@ -50,6 +50,9 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 - Launch Minecraft: Bedrock Edition via Stonecutter.
 
 #### How can I force DirectX 11?
+
+> [!CAUTION]
+> **Consider comparing performance between DirectX 11 & DirectX 12.** 
 
 - Create the following file:
         
