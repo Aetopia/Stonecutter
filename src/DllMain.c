@@ -6,12 +6,12 @@
 
 #include <d3d11.h>
 #include <MinHook.h>
-#include <dxgi1_2.h>
+#include <dxgi1_5.h>
 #include <appmodel.h>
 #include <windows.ui.core.h>
 
-BOOL fForce = {};
-ATOM (*__RegisterClassExW__)(PWNDCLASSEXW) = {};
+BOOL fForce = {}, fFeature = {};
+ATOM (*__RegisterClassExW__)(PVOID) = {};
 HRESULT (*__Present__)(LPUNKNOWN, UINT, UINT) = {};
 HRESULT (*__put_PointerCursor__)(ICoreWindow *, LPUNKNOWN) = {};
 HRESULT (*__ResizeBuffers__)(LPUNKNOWN, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
@@ -20,13 +20,19 @@ HRESULT (*__CreateSwapChainForCoreWindow__)(LPUNKNOWN, LPUNKNOWN, ICoreWindow *,
 
 HRESULT _Present_(LPUNKNOWN This, UINT SyncInterval, UINT Flags)
 {
-    return __Present__(This, SyncInterval, SyncInterval ? Flags : DXGI_PRESENT_ALLOW_TEARING);
+    if (fFeature && !SyncInterval)
+        Flags |= DXGI_PRESENT_ALLOW_TEARING;
+
+    return __Present__(This, SyncInterval, Flags);
 }
 
 HRESULT _ResizeBuffers_(LPUNKNOWN This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
                         UINT SwapChainFlags)
 {
-    return __ResizeBuffers__(This, BufferCount, Width, Height, NewFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+    if (fFeature)
+        SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
+    return __ResizeBuffers__(This, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 }
 
 HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
@@ -67,7 +73,9 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
         IUnknown_Release(pUnknown);
     }
 
-    pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    if (fFeature)
+        pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
     HRESULT hResult = __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 
     static BOOL fHook = {};
@@ -91,7 +99,7 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
     return hResult;
 }
 
-ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
+ATOM _RegisterClassExW_(PVOID lpwcx)
 {
     static BOOL fHook = {};
 
@@ -100,18 +108,20 @@ ATOM _RegisterClassExW_(PWNDCLASSEXW lpwcx)
         fHook = TRUE;
 
         WCHAR szPath[MAX_PATH] = {};
-        IDXGIFactory2 *pFactory = {};
+        IDXGIFactory5 *pFactory = {};
 
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
         fForce = GetPrivateProfileIntW(L"Stonecutter", L"Force", FALSE, szPath) == TRUE;
 
-        CreateDXGIFactory(&IID_IDXGIFactory2, (PVOID *)&pFactory);
+        CreateDXGIFactory2((UINT){}, &IID_IDXGIFactory5, (PVOID *)&pFactory);
+
+        IDXGIFactory5_CheckFeatureSupport(pFactory, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &fFeature, sizeof(BOOL));
 
         MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow, &_CreateSwapChainForCoreWindow_,
                       (PVOID *)&__CreateSwapChainForCoreWindow__);
         MH_EnableHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow);
 
-        IDXGIFactory2_Release(pFactory);
+        IDXGIFactory5_Release(pFactory);
     }
 
     return __RegisterClassExW__(lpwcx);
