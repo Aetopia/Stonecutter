@@ -36,7 +36,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 #### How can I disable V-Sync?
 
 > [!CAUTION]
-> **V-Sync might not be disabled if your system doesn't support screen tearing.**
+> **V-Sync might not be disabled if your system doesn't support [screen tearing](https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/variable-refresh-rate-displays).**
 
 - Open the following file:
   ```
