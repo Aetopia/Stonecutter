@@ -11,12 +11,12 @@
 #include <windows.ui.core.h>
 
 BOOL fForce = {}, fFeature = {};
-ATOM (*__RegisterClassExW__)(PVOID) = {};
-HRESULT (*__Present__)(LPUNKNOWN, UINT, UINT) = {};
-HRESULT (*__put_PointerCursor__)(ICoreWindow *, LPUNKNOWN) = {};
-HRESULT (*__ResizeBuffers__)(LPUNKNOWN, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
-HRESULT (*__CreateSwapChainForCoreWindow__)(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
-                                            IDXGISwapChain1 **ppSwapChain) = {};
+ATOM (*__RegisterClassExW)(PVOID) = {};
+HRESULT (*__Present)(LPUNKNOWN, UINT, UINT) = {};
+HRESULT (*__put_PointerCursor)(ICoreWindow *, LPUNKNOWN) = {};
+HRESULT (*__ResizeBuffers)(LPUNKNOWN, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
+HRESULT (*__CreateSwapChainForCoreWindow)(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
+                                          IDXGISwapChain1 **ppSwapChain) = {};
 
 PBYTE __wrap_memcpy(PBYTE Destination, PBYTE Source, SIZE_T Count)
 {
@@ -30,24 +30,24 @@ PBYTE __wrap_memset(PBYTE Destination, BYTE Data, SIZE_T Count)
     return Destination;
 }
 
-HRESULT _Present_(LPUNKNOWN This, UINT SyncInterval, UINT Flags)
+HRESULT _Present(LPUNKNOWN This, UINT SyncInterval, UINT Flags)
 {
     if (fFeature && !SyncInterval)
         Flags |= DXGI_PRESENT_ALLOW_TEARING;
 
-    return __Present__(This, SyncInterval, Flags);
+    return __Present(This, SyncInterval, Flags);
 }
 
-HRESULT _ResizeBuffers_(LPUNKNOWN This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
-                        UINT SwapChainFlags)
+HRESULT _ResizeBuffers(LPUNKNOWN This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
+                       UINT SwapChainFlags)
 {
     if (fFeature)
         SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-    return __ResizeBuffers__(This, BufferCount, Width, Height, NewFormat, SwapChainFlags);
+    return __ResizeBuffers(This, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 }
 
-HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
+HRESULT _put_PointerCursor(ICoreWindow *This, LPUNKNOWN value)
 {
     ICoreCursor *pCursor = {};
     ICoreWindow_get_PointerCursor(This, &pCursor);
@@ -68,12 +68,12 @@ HRESULT _put_PointerCursor_(ICoreWindow *This, LPUNKNOWN value)
     if (pCursor)
         ICoreCursor_Release(pCursor);
 
-    return __put_PointerCursor__(This, value);
+    return __put_PointerCursor(This, value);
 }
 
-HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreWindow *pWindow,
-                                       DXGI_SWAP_CHAIN_DESC1 *pDesc, LPUNKNOWN pRestrictToOutput,
-                                       IDXGISwapChain1 **ppSwapChain)
+HRESULT _CreateSwapChainForCoreWindow(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreWindow *pWindow,
+                                      DXGI_SWAP_CHAIN_DESC1 *pDesc, LPUNKNOWN pRestrictToOutput,
+                                      IDXGISwapChain1 **ppSwapChain)
 {
     static BOOL fHook = {};
 
@@ -88,7 +88,7 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
     if (fFeature)
         pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-    HRESULT hResult = __CreateSwapChainForCoreWindow__(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
+    HRESULT hResult = __CreateSwapChainForCoreWindow(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 
     if (!fHook)
     {
@@ -97,14 +97,13 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
         IDXGISwapChain1Vtbl *pVtbl = (*ppSwapChain)->lpVtbl;
         PVOID pTarget = pVtbl->Present;
 
-        MH_CreateHook(pTarget, &_Present_, (PVOID *)&__Present__);
+        MH_CreateHook(pTarget, &_Present, (PVOID *)&__Present);
         MH_QueueEnableHook(pTarget);
 
-        MH_CreateHook(pTarget = pVtbl->ResizeBuffers, &_ResizeBuffers_, (PVOID *)&__ResizeBuffers__);
+        MH_CreateHook(pTarget = pVtbl->ResizeBuffers, &_ResizeBuffers, (PVOID *)&__ResizeBuffers);
         MH_QueueEnableHook(pTarget);
 
-        MH_CreateHook(pTarget = pWindow->lpVtbl->put_PointerCursor, &_put_PointerCursor_,
-                      (PVOID *)&__put_PointerCursor__);
+        MH_CreateHook(pTarget = pWindow->lpVtbl->put_PointerCursor, &_put_PointerCursor, (PVOID *)&__put_PointerCursor);
         MH_QueueEnableHook(pTarget);
 
         MH_ApplyQueued();
@@ -113,7 +112,7 @@ HRESULT _CreateSwapChainForCoreWindow_(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreW
     return hResult;
 }
 
-ATOM _RegisterClassExW_(PVOID lpwcx)
+ATOM _RegisterClassExW(PVOID lpwcx)
 {
     static BOOL fHook = {};
 
@@ -131,13 +130,13 @@ ATOM _RegisterClassExW_(PVOID lpwcx)
         IDXGIFactory5_CheckFeatureSupport(pFactory, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &fFeature, sizeof(BOOL));
 
         PVOID pTarget = pFactory->lpVtbl->CreateSwapChainForCoreWindow;
-        MH_CreateHook(pTarget, &_CreateSwapChainForCoreWindow_, (PVOID *)&__CreateSwapChainForCoreWindow__);
+        MH_CreateHook(pTarget, &_CreateSwapChainForCoreWindow, (PVOID *)&__CreateSwapChainForCoreWindow);
         MH_EnableHook(pTarget);
 
         IDXGIFactory5_Release(pFactory);
     }
 
-    return __RegisterClassExW__(lpwcx);
+    return __RegisterClassExW(lpwcx);
 }
 
 BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
@@ -156,7 +155,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
         }
 
         MH_Initialize();
-        MH_CreateHook(RegisterClassExW, &_RegisterClassExW_, (PVOID *)&__RegisterClassExW__);
+        MH_CreateHook(RegisterClassExW, &_RegisterClassExW, (PVOID *)&__RegisterClassExW);
         MH_EnableHook(RegisterClassExW);
     }
 
