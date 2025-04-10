@@ -18,6 +18,18 @@ HRESULT (*__ResizeBuffers__)(LPUNKNOWN, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {
 HRESULT (*__CreateSwapChainForCoreWindow__)(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
                                             IDXGISwapChain1 **ppSwapChain) = {};
 
+PBYTE __wrap_memcpy(PBYTE Destination, PBYTE Source, SIZE_T Count)
+{
+    __movsb(Destination, Source, Count);
+    return Destination;
+}
+
+PBYTE __wrap_memset(PBYTE Destination, BYTE Data, SIZE_T Count)
+{
+    __stosb(Destination, Data, Count);
+    return Destination;
+}
+
 HRESULT _Present_(LPUNKNOWN This, UINT SyncInterval, UINT Flags)
 {
     if (fFeature && !SyncInterval)

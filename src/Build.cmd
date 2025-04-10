@@ -1,14 +1,17 @@
 @echo off
 cd "%~dp0">nul 2>&1
+
 rmdir /Q /S "bin">nul 2>&1
 mkdir "bin">nul 2>&1
 
-windres.exe -i "Resources\DllMain.rc" -o "%TEMP%\.o"
-gcc.exe -Os -Wl,--gc-sections -fvisibility=hidden -flto -shared -nostdlib -static -s "DllMain.c" "%TEMP%\.o" -lMinHook -lKernel32 -lucrtbase -lUser32 -lDXGI -o "bin\Stonecutter.dll"
+windres.exe -i "Resources\DllMain.rc" -o "%TEMP%\DllMain.o"
+windres.exe -i "Resources\WinMain.rc" -o "%TEMP%\WinMain.o"
 
-windres.exe -i "Resources\WinMain.rc" -o "%TEMP%\.o"
-gcc.exe -Os -Wl,--gc-sections -mwindows -nostdlib -s "WinMain.c" "%TEMP%\.o" -lUserenv -lShell32 -lShlwapi -lOle32 -lKernel32 -lAdvapi32 -o "bin\Stonecutter.exe"
+gcc.exe -fvisibility=hidden -flto -Ofast -shared -nostdlib -s -static -Wl,--wrap=memcpy,--wrap=memset "DllMain.c" "%TEMP%\DllMain.o" -lMinHook -lKernel32 -lUser32 -lDXGI -o "bin\Stonecutter.dll"
+gcc.exe -fvisibility=hidden -flto -Ofast -mwindows -nostdlib -s "WinMain.c" "%TEMP%\WinMain.o" -lUserenv -lShell32 -lShlwapi -lOle32 -lKernel32 -lAdvapi32 -o "bin\Stonecutter.exe"
 
-del "%TEMP%\.o">nul 2>&1
+del "%TEMP%\DllMain.o">nul 2>&1
+del "%TEMP%\WinMain.o">nul 2>&1
+
 upx.exe --best --ultra-brute "bin\*">nul 2>&1
 powershell.exe -Command "$ProgressPreference = 'SilentlyContinue'; Compress-Archive -Path 'bin\*' -DestinationPath 'bin\Stonecutter.zip' -Force">nul 2>&1
