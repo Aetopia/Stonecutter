@@ -6,48 +6,44 @@
 
 #include <d3d11.h>
 #include <MinHook.h>
-#include <dxgi1_5.h>
+#include <dxgi1_2.h>
 #include <appmodel.h>
 #include <windows.ui.core.h>
 
-BOOL fForce = {}, fFeature = {};
+BOOL fForce = {};
 ATOM (*__RegisterClassExW)(PVOID) = {};
-HRESULT (*__Present)(LPUNKNOWN, UINT, UINT) = {};
-HRESULT (*__put_PointerCursor)(ICoreWindow *, LPUNKNOWN) = {};
-HRESULT (*__ResizeBuffers)(LPUNKNOWN, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
-HRESULT (*__CreateSwapChainForCoreWindow)(LPUNKNOWN, LPUNKNOWN, ICoreWindow *, DXGI_SWAP_CHAIN_DESC1 *, LPUNKNOWN,
-                                          IDXGISwapChain1 **ppSwapChain) = {};
+HRESULT (*__Present)(PVOID, UINT, UINT) = {};
+HRESULT (*__put_PointerCursor)(PVOID, PVOID) = {};
+HRESULT (*__ResizeBuffers)(PVOID, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
+HRESULT (*__CreateSwapChainForCoreWindow)(PVOID, PVOID, PVOID, PVOID, PVOID, PVOID) = {};
 
-PBYTE __wrap_memcpy(PBYTE Destination, PBYTE Source, SIZE_T Count)
+PVOID __wrap_memcpy(PVOID Destination, PVOID Source, SIZE_T Count)
 {
     __movsb(Destination, Source, Count);
     return Destination;
 }
 
-PBYTE __wrap_memset(PBYTE Destination, BYTE Data, SIZE_T Count)
+PVOID __wrap_memset(PVOID Destination, BYTE Data, SIZE_T Count)
 {
     __stosb(Destination, Data, Count);
     return Destination;
 }
 
-HRESULT _Present(LPUNKNOWN This, UINT SyncInterval, UINT Flags)
+HRESULT _Present(PVOID This, UINT SyncInterval, UINT Flags)
 {
-    if (fFeature && !SyncInterval)
+    if (!SyncInterval)
         Flags |= DXGI_PRESENT_ALLOW_TEARING;
-
     return __Present(This, SyncInterval, Flags);
 }
 
-HRESULT _ResizeBuffers(LPUNKNOWN This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
+HRESULT _ResizeBuffers(PVOID This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
                        UINT SwapChainFlags)
 {
-    if (fFeature)
-        SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
-    return __ResizeBuffers(This, BufferCount, Width, Height, NewFormat, SwapChainFlags);
+    return __ResizeBuffers(This, BufferCount, Width, Height, NewFormat,
+                           SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 }
 
-HRESULT _put_PointerCursor(ICoreWindow *This, LPUNKNOWN value)
+HRESULT _put_PointerCursor(PVOID This, PVOID value)
 {
     ICoreCursor *pCursor = {};
     ICoreWindow_get_PointerCursor(This, &pCursor);
@@ -55,10 +51,10 @@ HRESULT _put_PointerCursor(ICoreWindow *This, LPUNKNOWN value)
     if (!pCursor || !value)
     {
         Rect rcClient = {};
-        ICoreWindow2 *pWindow = {};
+        PVOID pWindow = {};
 
         ICoreWindow_get_Bounds(This, &rcClient);
-        ICoreWindow_QueryInterface(This, &IID_ICoreWindow2, (PVOID *)&pWindow);
+        ICoreWindow_QueryInterface(This, &IID_ICoreWindow2, &pWindow);
 
         ICoreWindow2_put_PointerPosition(pWindow,
                                          (Point){rcClient.X + rcClient.Width / 2, rcClient.Y + rcClient.Height / 2});
@@ -67,44 +63,37 @@ HRESULT _put_PointerCursor(ICoreWindow *This, LPUNKNOWN value)
 
     if (pCursor)
         ICoreCursor_Release(pCursor);
-
     return __put_PointerCursor(This, value);
 }
 
-HRESULT _CreateSwapChainForCoreWindow(LPUNKNOWN This, LPUNKNOWN pDevice, ICoreWindow *pWindow,
-                                      DXGI_SWAP_CHAIN_DESC1 *pDesc, LPUNKNOWN pRestrictToOutput,
-                                      IDXGISwapChain1 **ppSwapChain)
+HRESULT _CreateSwapChainForCoreWindow(PVOID This, PVOID pDevice, ICoreWindow *pWindow, DXGI_SWAP_CHAIN_DESC1 *pDesc,
+                                      PVOID pRestrictToOutput, IDXGISwapChain1 **ppSwapChain)
 {
     static BOOL fHook = {};
 
     if (fForce)
     {
-        LPUNKNOWN pUnknown = {};
-        if (IUnknown_QueryInterface(pDevice, &IID_ID3D11Device, (PVOID *)&pUnknown))
+        PVOID pUnknown = {};
+        if (IUnknown_QueryInterface(pDevice, &IID_ID3D11Device, &pUnknown))
             return DXGI_ERROR_INVALID_CALL;
         IUnknown_Release(pUnknown);
     }
 
-    if (fFeature)
-        pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
+    pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     HRESULT hResult = __CreateSwapChainForCoreWindow(This, pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 
     if (!fHook)
     {
         fHook = TRUE;
 
-        IDXGISwapChain1Vtbl *pVtbl = (*ppSwapChain)->lpVtbl;
-        PVOID pTarget = pVtbl->Present;
+        MH_CreateHook((*ppSwapChain)->lpVtbl->Present, &_Present, (PVOID *)&__Present);
+        MH_QueueEnableHook((*ppSwapChain)->lpVtbl->Present);
 
-        MH_CreateHook(pTarget, &_Present, (PVOID *)&__Present);
-        MH_QueueEnableHook(pTarget);
+        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers, &_ResizeBuffers, (PVOID *)&__ResizeBuffers);
+        MH_QueueEnableHook((*ppSwapChain)->lpVtbl->ResizeBuffers);
 
-        MH_CreateHook(pTarget = pVtbl->ResizeBuffers, &_ResizeBuffers, (PVOID *)&__ResizeBuffers);
-        MH_QueueEnableHook(pTarget);
-
-        MH_CreateHook(pTarget = pWindow->lpVtbl->put_PointerCursor, &_put_PointerCursor, (PVOID *)&__put_PointerCursor);
-        MH_QueueEnableHook(pTarget);
+        MH_CreateHook(pWindow->lpVtbl->put_PointerCursor, &_put_PointerCursor, (PVOID *)&__put_PointerCursor);
+        MH_QueueEnableHook(pWindow->lpVtbl->put_PointerCursor);
 
         MH_ApplyQueued();
     }
@@ -121,25 +110,23 @@ ATOM _RegisterClassExW(PVOID lpwcx)
         fHook = TRUE;
 
         WCHAR szPath[MAX_PATH] = {};
-        IDXGIFactory5 *pFactory = {};
-
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\..\\RoamingState\\Stonecutter.ini", szPath, MAX_PATH);
         fForce = GetPrivateProfileIntW(L"Stonecutter", L"Force", FALSE, szPath) == TRUE;
 
-        CreateDXGIFactory2((UINT){}, &IID_IDXGIFactory5, (PVOID *)&pFactory);
-        IDXGIFactory5_CheckFeatureSupport(pFactory, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &fFeature, sizeof(BOOL));
+        IDXGIFactory2 *pFactory = {};
+        CreateDXGIFactory(&IID_IDXGIFactory2, (PVOID *)&pFactory);
 
-        PVOID pTarget = pFactory->lpVtbl->CreateSwapChainForCoreWindow;
-        MH_CreateHook(pTarget, &_CreateSwapChainForCoreWindow, (PVOID *)&__CreateSwapChainForCoreWindow);
-        MH_EnableHook(pTarget);
+        MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow, &_CreateSwapChainForCoreWindow,
+                      (PVOID *)&__CreateSwapChainForCoreWindow);
+        MH_EnableHook(pFactory->lpVtbl->CreateSwapChainForCoreWindow);
 
-        IDXGIFactory5_Release(pFactory);
+        IDXGIFactory2_Release(pFactory);
     }
 
     return __RegisterClassExW(lpwcx);
 }
 
-BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
+BOOL DllMainCRTStartup(PVOID hInstance, DWORD dwReason, PVOID pReserved)
 {
     if (dwReason == DLL_PROCESS_ATTACH)
     {
@@ -147,7 +134,7 @@ BOOL DllMainCRTStartup(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
         if (GetCurrentPackageFamilyName(&(UINT32){}, NULL) != ERROR_INSUFFICIENT_BUFFER)
             return FALSE;
 
-        HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
+        PVOID hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
         if (!hMutex || GetLastError())
         {
             CloseHandle(hMutex);
