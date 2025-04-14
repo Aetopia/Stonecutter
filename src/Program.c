@@ -16,7 +16,7 @@ VOID WinMainCRTStartup()
     if (GetLastError())
         ExitProcess(EXIT_SUCCESS);
 
-    HANDLE hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
+    PVOID hMutex = CreateMutexW(NULL, FALSE, L"Stonecutter");
     if (!hMutex)
         ExitProcess(EXIT_SUCCESS);
 
@@ -29,10 +29,10 @@ VOID WinMainCRTStartup()
             if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
             {
                 PACL pAcl = {};
-                HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, StrToIntW(pArgs[++_]));
-                HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetProcessIdOfThread(hThread));
-                PVOID pAddress =
-                    VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+                PVOID hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, StrToIntW(pArgs[++_])),
+                      hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetProcessIdOfThread(hThread)),
+                      pAddress =
+                          VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
                 PathRenameExtensionW(szPath, L".dll");
                 SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
@@ -46,7 +46,7 @@ VOID WinMainCRTStartup()
                 SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
 
                 WriteProcessMemory(hProcess, pAddress, szPath, sizeof(szPath), NULL);
-                QueueUserAPC((PAPCFUNC)LoadLibraryW, hThread, (ULONG_PTR)pAddress);
+                QueueUserAPC((PVOID)LoadLibraryW, hThread, (ULONG_PTR)pAddress);
 
                 ResumeThread(hThread);
                 CloseHandle(hThread);
@@ -58,27 +58,25 @@ VOID WinMainCRTStartup()
     }
     else
     {
-        PSID pSid = {};
-        IPackageDebugSettings *pSettings = {};
-        IApplicationActivationManager *pManager = {};
+        PVOID pSid = {}, pSettings = {}, pManager = {};
         WCHAR szMutex[MAX_PATH] = {}, szPackage[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
 
         DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
         GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szMutex, &((ULONG){MAX_PATH}));
         LocalFree(pSid);
 
-        HANDLE hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szMutex, L"\\Stonecutter"));
+        PVOID hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szMutex, L"\\Stonecutter"));
         BOOL fExists = hMutex && GetLastError();
         CloseHandle(hMutex);
 
         CoInitialize(NULL);
         CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_SERVER,
-                         &IID_IApplicationActivationManager, (PVOID *)&pManager);
+                         &IID_IApplicationActivationManager, &pManager);
 
         if (!fExists)
         {
             CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
-                             (PVOID *)&pSettings);
+                             &pSettings);
             GetPackagesByPackageFamily(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &(UINT32){PACKAGE_GRAPH_MIN_SIZE},
                                        &(PWSTR){}, &(UINT32){PACKAGE_FULL_NAME_MAX_LENGTH + 1}, szPackage);
 

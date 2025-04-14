@@ -35,9 +35,6 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 
 #### How can I disable V-Sync?
 
-> [!CAUTION]
-> **V-Sync might not be disabled if your system doesn't support [tearing](https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/variable-refresh-rate-displays).**
-
 - Open the following file:
   ```
   %LOCALAPPDATA%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\minecraftpe\options.txt
@@ -71,7 +68,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 - Launch Minecraft: Bedrock Edition via Stonecutter.
 
 ## Build
-1. Install [MSYS2](https://www.msys2.org/) & [UPX](https://upx.github.io/) for optional compression.
+1. Install [MSYS2](https://www.msys2.org) & [UPX](https://upx.github.io) for optional compression.
 
 2. Update the MSYS2 Environment until there are no pending updates using:
 
@@ -79,7 +76,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
     pacman -Syu --noconfirm
     ```
 
-3. Install GCC & [MinHook](https://github.com/TsudaKageyu/minhook) using:
+3. Install [GCC](https://gcc.gnu.org) & [MinHook](https://github.com/TsudaKageyu/minhook) using:
 
     ```bash
     pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-MinHook --noconfirm
@@ -87,4 +84,4 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
 
 3. Make sure `<MSYS2 Installation Directory>\ucrt64\bin` is added to the Windows `PATH` environment variable.
 
-4. Run [`Build.cmd`](src/Build.cmd).
+4. Run [`Build.cmd`](Build.cmd).

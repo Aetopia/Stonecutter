@@ -1,5 +1,5 @@
 #include <windows.h>
-0 ICON ".ico"
+ICON_SMALL ICON "Program.ico"
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION 1, 5, 3, 2
 BEGIN
@@ -7,10 +7,10 @@ BLOCK "StringFileInfo"
 BEGIN
 BLOCK "040904b0"
 BEGIN
-VALUE "FileDescription",  "Stonecutter"
-VALUE "ProductName",      "Stonecutter"
-VALUE "ProductVersion",	  "1.5.3.2"
-VALUE "LegalCopyright",   "Copyright (C) 2024 - 25"
+VALUE "FileDescription", "Stonecutter"
+VALUE "ProductName", "Stonecutter"
+VALUE "ProductVersion",	"1.5.3.2"
+VALUE "LegalCopyright", "Copyright (C) 2024 - 25"
 END
 END
 BLOCK "VarFileInfo"
