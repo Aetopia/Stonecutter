@@ -29,12 +29,6 @@ VOID WinMainCRTStartup()
             if (CompareStringOrdinal(L"-tid", -1, pArgs[_], -1, FALSE) == CSTR_EQUAL)
             {
                 PACL pAcl = {};
-                PVOID hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, StrToIntW(pArgs[++_])),
-                      hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetProcessIdOfThread(hThread)),
-                      pAddress =
-                          VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-
-                PathRenameExtensionW(szPath, L".dll");
                 SetEntriesInAclW(PACKAGE_GRAPH_MIN_SIZE,
                                  &(EXPLICIT_ACCESSW){.grfAccessPermissions = GENERIC_ALL,
                                                      .grfAccessMode = SET_ACCESS,
@@ -43,7 +37,16 @@ VOID WinMainCRTStartup()
                                                                  .TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP,
                                                                  .ptstrName = L"ALL APPLICATION PACKAGES"}},
                                  NULL, &pAcl);
+
+                PathRenameExtensionW(szPath, L".dll");
                 SetNamedSecurityInfoW(szPath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pAcl, NULL);
+               
+                LocalFree(pAcl);
+
+                PVOID hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, StrToIntW(pArgs[++_])),
+                      hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetProcessIdOfThread(hThread)),
+                      pAddress =
+                          VirtualAllocEx(hProcess, NULL, sizeof(szPath), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
                 WriteProcessMemory(hProcess, pAddress, szPath, sizeof(szPath), NULL);
                 QueueUserAPC((PVOID)LoadLibraryW, hThread, (ULONG_PTR)pAddress);
