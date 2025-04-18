@@ -66,7 +66,7 @@ VOID WinMainCRTStartup()
 
         DeriveAppContainerSidFromAppContainerName(L"Microsoft.MinecraftUWP_8wekyb3d8bbwe", &pSid);
         GetAppContainerNamedObjectPath(NULL, pSid, MAX_PATH, szMutex, &((ULONG){MAX_PATH}));
-        LocalFree(pSid);
+        FreeSid(pSid);
 
         PVOID hMutex = CreateMutexW(NULL, FALSE, lstrcatW(szMutex, L"\\Stonecutter"));
         BOOL fExists = hMutex && GetLastError();
