@@ -16,16 +16,16 @@ HRESULT (*__put_PointerCursor)(PVOID, PVOID) = {};
 HRESULT (*__ResizeBuffers)(PVOID, UINT, UINT, UINT, DXGI_FORMAT, UINT) = {};
 HRESULT (*__CreateSwapChainForCoreWindow)(PVOID, PVOID, PVOID, PVOID, PVOID, PVOID) = {};
 
-PVOID __wrap_memcpy(PVOID Dst, PVOID Src, SIZE_T Size)
+PVOID __wrap_memcpy(PVOID Destination, PVOID Source, SIZE_T Count)
 {
-    __movsb(Dst, Src, Size);
-    return Dst;
+    __movsb(Destination, Source, Count);
+    return Destination;
 }
 
-PVOID __wrap_memset(PVOID Dst, BYTE Val, SIZE_T Size)
+PVOID __wrap_memset(PVOID Destination, BYTE Data, SIZE_T Count)
 {
-    __stosb(Dst, Val, Size);
-    return Dst;
+    __stosb(Destination, Data, Count);
+    return Destination;
 }
 
 HRESULT _Present(PVOID This, UINT SyncInterval, UINT Flags)
