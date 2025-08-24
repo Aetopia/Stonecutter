@@ -1,0 +1,21 @@
+#include <windows.h>
+ICON_SMALL ICON "Program.ico"
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 1, 0, 0, 0
+BEGIN
+BLOCK "StringFileInfo"
+BEGIN
+BLOCK "040904b0"
+BEGIN
+VALUE "CompanyName", "Aetopia"
+VALUE "FileDescription", "Stonecutter"
+VALUE "ProductName", "Stonecutter"
+VALUE "ProductVersion",	"1.0.0.0"
+VALUE "LegalCopyright", "Copyright (C) 2025 Aetopia"
+END
+END
+BLOCK "VarFileInfo"
+BEGIN
+VALUE "Translation", 0x0, 1252
+END
+END
