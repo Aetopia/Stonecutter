@@ -1,3 +1,7 @@
+> [!IMPORTANT]
+> - **Stonecutter only supports UWP builds of Minecraft: Bedrock Edition.**
+> - **Please use [Igneous](https://github.com/Aetopia/Igneous) instead of GDK builds of Minecraft: Bedrock Edition.** 
+
 > [!CAUTION]
 > **Only supported on Windows x64!**
 
@@ -81,5 +85,6 @@ Fixes various bugs related to Minecraft: Bedrock Edition.
     ```bash
     pacman -Syu mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-MinHook --noconfirm
     ```
+
 
 3. Start MSYS2's `UCRT64` environment & run `Build.cmd`.
